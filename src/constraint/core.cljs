@@ -1,3 +1,3 @@
-(ns perfection.core)
+(ns constraint.core)
 
 (.log js/console "Hello World!")
