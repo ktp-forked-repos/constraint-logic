@@ -7,7 +7,8 @@
                  [org.clojure/clojurescript "0.0-2311"]
                  [com.cemerick/piggieback  "0.1.3"]
                  [com.cemerick/austin "0.1.4"]
-                 [figwheel  "0.1.3-SNAPSHOT"]]
+                 [figwheel  "0.1.3-SNAPSHOT"]
+                 [rm-hull/monet "0.2.1"]]
   :jvm-opts  ["-Xmx1G"]
 
   :plugins [[lein-cljsbuild "1.0.4-SNAPSHOT"]
@@ -22,7 +23,8 @@
 
   :cljsbuild {:builds [{:id "dev"
                         :source-paths ["src/constraint"
-                                       "src/figwheel"]
+                                       "src/figwheel"
+                                       "src/brepl"]
 
                         :compiler {:output-to "resources/public/constraint.js"
                                    :output-dir "resources/public/out"
