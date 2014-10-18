@@ -7,36 +7,33 @@
                            {:width 1000 :height 1000}
                            [:svg:defs
                             [:svg:marker
-                             {:id "markerCircle"
-                              :markerWidth 8
-                              :markerHeight 8
-                              :refX 5
-                              :refY 5}
-                             [:svg:circle {:cx 5
-                                           :cy 5
-                                           :r 3
-                                           :stroke "none"
-                                           :fill "#000000"}]
-                             ]
+                             {:id "Triangle"
+                              :viewBox "0 0 10 10" 
+                              :refX "1"
+                              :refY "5"
+                              :markerWidth "6"
+                              :markerHeight "6"
+                              :orient "auto"}
+                             [:svg:path {:d "M0,0 L 10,5 L0,10 z"}]]
                             ]
                            [:svg:path
-                            {:d "M100,10 L150,10 L150,60"
-                             ; :style (str "stroke: #6666ff; stroke-width: 1px; fill: none;"
-                             ;             " marker-start: url (#markerCircle); "
-                             ;             " marker-end: url (#markerCircle); ")
+                            {:d "M100,20 L150,20 L200,20"
                              :stroke "#6666ff"
-                             :stroke-width "1px"
+                             :stroke-width "4px"
                              :fill "none"
-                             :marker-start "url(#markerCircle)"
-                             :marker-end "url(#markerCircle)"
-                             }]
+                             :marker-mid "url(#Triangle)"}]
+                           [:svg:path
+                            {:d "M200,40 L150,60 L100,80"
+                             :stroke "#6666ff"
+                             :stroke-width "4px"
+                             :fill "none"
+                             :marker-mid "url(#Triangle)"}]
                            [:svg:circle {:id "button"
                                          :fill "yellow"
                                          :stroke "green"
                                          :stroke-width 4
                                          :cx 50 :cy 50
-                                         :r 50
-                                         }]]))
+                                         :r 50}]]))
 
 (defn click-handler [e]
   (js/alert "123"))
