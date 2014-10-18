@@ -8,6 +8,8 @@
                  [com.cemerick/piggieback  "0.1.3"]
                  [com.cemerick/austin "0.1.4"]
                  [figwheel  "0.1.3-SNAPSHOT"]
+                 [prismatic/dommy "1.0.0"]
+                 [crate "0.2.4"]
                  [rm-hull/monet "0.2.1"]]
   :jvm-opts  ["-Xmx1G"]
 

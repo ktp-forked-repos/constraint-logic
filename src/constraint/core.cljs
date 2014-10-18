@@ -1,34 +1,51 @@
 (ns constraint.core
-  (:require [monet.canvas :as canvas]))
+  (:require [dommy.core :as dommy]
+            [crate.core :as crate]))
 
-(def canvas-dom (.getElementById js/document "canvas"))
+(.appendChild (dommy.core/sel1 :.forsvg)
+              (crate/html [:svg:svg
+                           {:width 1000 :height 1000}
+                           [:svg:defs
+                            [:svg:marker
+                             {:id "markerCircle"
+                              :markerWidth 8
+                              :markerHeight 8
+                              :refX 5
+                              :refY 5}
+                             [:svg:circle {:cx 5
+                                           :cy 5
+                                           :r 3
+                                           :stroke "none"
+                                           :fill "#000000"}]
+                             ]
+                            ]
+                           [:svg:path
+                            {:d "M100,10 L150,10 L150,60"
+                             ; :style (str "stroke: #6666ff; stroke-width: 1px; fill: none;"
+                             ;             " marker-start: url (#markerCircle); "
+                             ;             " marker-end: url (#markerCircle); ")
+                             :stroke "#6666ff"
+                             :stroke-width "1px"
+                             :fill "none"
+                             :marker-start "url(#markerCircle)"
+                             :marker-end "url(#markerCircle)"
+                             }]
+                           [:svg:circle {:id "button"
+                                         :fill "yellow"
+                                         :stroke "green"
+                                         :stroke-width 4
+                                         :cx 50 :cy 50
+                                         :r 50
+                                         }]]))
 
-(def monet-canvas (canvas/init canvas-dom "2d"))
-
-(canvas/add-entity monet-canvas :background
-                   (canvas/entity {:x 0 :y 0
-                                   :w 100 :h 100} ; val
-                                  nil                       ; update function
-                                  (fn [ctx val]             ; draw function
-                                    (-> ctx
-                                        (canvas/fill-style "#191d21")
-                                        (canvas/fill-rect val)))))
-
-
-(canvas/add-entity monet-canvas :asdf
-                   (canvas/entity {:x 50 :y 50
-                                   :w 100 :h 100
-                                   :r 30} ; val
-                                  nil                       ; update function
-                                  (fn [ctx val]             ; draw function
-                                    (-> ctx
-                                        ; (canvas/rounded-rect val)
-                                        (canvas/fill-style "green")
-                                        (canvas/circle val)
-                                        (canvas/fill)
-                                        ))))
+(defn click-handler [e]
+  (js/alert "123"))
 
 
 
+(dommy.core/listen! (dommy.core/sel1 :circle) :click click-handler)
 
-(.log js/console "Hello World!")
+(dommy.core/append (dommy.core/parent (dommy.core/sel1 :circle))
+                   (crate/html
+                     [:svg:line]))
+
