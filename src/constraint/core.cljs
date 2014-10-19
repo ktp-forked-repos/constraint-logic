@@ -36,9 +36,10 @@
     (string/join " " (map str ["M" "L" "L"] coords))))
 
 
-(defn line [from to color]
+(defn line [from to color id]
   [:svg:path
-   {:id "clickthis"
+   {:class "clickable"
+    :id id
     :d (make-line-dirs from to)
     :stroke color
     :stroke-width "10px"
@@ -53,8 +54,8 @@
                            [:svg:defs
                             triangle-marker
                             circle-marker]
-                           (line [100, 20] [200, 40] "#6666ff")
-                           (line [200, 40] [100, 80] "red")]))
+                           (line [100, 20] [200, 40] "#6666ff" "one")
+                           (line [200, 40] [100, 80] "red" "two")]))
 
 (defn e->tid [e]
   (-> e
@@ -66,9 +67,17 @@
   (.log js/console (e->tid e))
   (js/alert "123"))
 
+(def vertex-loc [[40 40]
+                 [100 40]
+                 [100 100]
+                 [40 100]])
 
+(def edges-vec [[0 1 "red"]
+                [1 2 "blue"]
+                [2 3 "red"]
+                [3 1 "red"]])
 
-(map #(dommy.core/listen! % :click click-handler) (dommy.core/sel :#clickthis))
+(map #(dommy.core/listen! % :click click-handler) (dommy.core/sel :.clickable))
 
 ; (dommy.core/append (dommy.core/parent (dommy.core/sel1 :circle))
 ;                    (crate/html
