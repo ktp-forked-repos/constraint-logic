@@ -10,7 +10,9 @@
                  [figwheel  "0.1.3-SNAPSHOT"]
                  [prismatic/dommy "1.0.0"]
                  [crate "0.2.4"]
-                 [rm-hull/monet "0.2.1"]]
+                 [rm-hull/big-bang "0.0.1-SNAPSHOT"]
+                 [org.clojure/core.async  "0.1.346.0-17112a-alpha"]]
+
   :jvm-opts  ["-Xmx1G"]
 
   :plugins [[lein-cljsbuild "1.0.4-SNAPSHOT"]

@@ -1,7 +1,10 @@
 (ns constraint.core
-  (:require [dommy.core :as dommy]
+  (:require-macros [cljs.core.async.macros :refer [go]])
+  (:require
+    [dommy.core :as dommy]
             [crate.core :as crate]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [big-bang.core :refer [big-bang!]]))
 
 (def triangle-marker
   [:svg:marker
@@ -50,14 +53,14 @@
 
 
 
-(defn e->tid [e]
+(defn event->targetid [e]
   (-> e
       (js->clj)
       (.-target)
       (.-id)))
 
 (defn click-handler [e]
-  (.log js/console (e->tid e))
+  (.log js/console (event->targetid e))
   (js/alert "123"))
 
 (def vertex-loc [[40 40]
@@ -89,16 +92,29 @@
    [:svg:defs
     triangle-marker
     circle-marker]
-   (map svg-edge edges)]
-  )
+   (map svg-edge edges)])
 
-(.appendChild (dommy.core/sel1 :.forsvg)
-              (crate/html (make-svg [1000 1000]
-                                    (make-edges edges-vec vertex-loc)
-                                    )))
 
 (map #(dommy.core/listen! % :click click-handler) (dommy.core/sel :.clickable))
-; (dommy.core/append (dommy.core/parent (dommy.core/sel1 :circle))
-;                    (crate/html
-;                      [:svg:line]))
 
+(defn draw-world [edges]
+  (dommy/replace! (dommy.core/sel1 :#forsvg)
+                  (crate/html [:div#forsvg
+                                (make-svg [1000 1000]
+                                          edges)])))
+
+(defn flip-edge [[left right color]]
+  [right left color])
+
+
+(defn update-state [event edges]
+  (let [clicked-what (event->targetid event)]
+    (if (= clicked-what "forsvg")
+      edges
+      (update-in edges [clicked-what] flip-edge))))
+
+(go
+  (big-bang!
+    :initial-state (make-edges edges-vec vertex-loc)
+    :to-draw draw-world
+    :on-click update-state))
