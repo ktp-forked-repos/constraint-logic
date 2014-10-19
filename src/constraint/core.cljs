@@ -7,13 +7,28 @@
   [:svg:marker
    {:id "Triangle"
     :viewBox "0 0 10 10"
-    :refX "1"
+    :refX "3"
     :refY "5"
     :markerWidth "3"
     :markerHeight "3"
     :orient "auto"}
-   [:svg:path {:d "M0,0 L 10,5 L0,10 z"}]]
-  )
+   [:svg:path {:d "M0,0 L 10,5 L0,10 z"}]])
+
+
+(def circle-marker
+  [:svg:marker
+   {:id "Vertex"
+    :refX "2"
+    :refY "2"
+    :markerWidth "5"
+    :markerHeight "5"
+    :orient "auto"}
+   [:svg:circle
+    {:fill "black"
+     :stroke "none"
+     :cx 2 :cy 2
+     :r 2}]])
+
 
 (defn make-line-dirs [from to]
   (let [middle (map (comp #(/ % 2) +) from to)
@@ -28,20 +43,18 @@
     :stroke color
     :stroke-width "10px"
     :fill "none"
-    :marker-mid "url(#Triangle)"}])
+    :marker-start "url(#Vertex)"
+    :marker-mid "url(#Triangle)"
+    :marker-end "url(#Vertex)"}])
 
 
 (.appendChild (dommy.core/sel1 :.forsvg)
               (crate/html [:svg:svg {:width 1000 :height 1000}
-                           [:svg:defs triangle-marker]
+                           [:svg:defs
+                            triangle-marker
+                            circle-marker]
                            (line [100, 20] [200, 40] "#6666ff")
-                           (line [200, 40] [100, 80] "red")
-                           [:svg:circle {:id "button"
-                                         :fill "yellow"
-                                         :stroke "green"
-                                         :stroke-width 4
-                                         :cx 50 :cy 50
-                                         :r 50}]]))
+                           (line [200, 40] [100, 80] "red")]))
 
 (defn e->tid [e]
   (-> e
