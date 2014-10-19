@@ -44,7 +44,7 @@
    {:class "clickable"
     :id id
     :d (make-line-dirs from to)
-    :stroke color
+    :stroke (name color)
     :stroke-width "10px"
     :fill "none"
     :marker-start "url(#Vertex)"
@@ -60,15 +60,19 @@
       (.-id)))
 
 
-(def vertex-loc [[40 40]
-                 [300 40]
-                 [300 300]
-                 [40 300]])
+(def vertices [[0 [40 40]]
+               [1 [300 40]]
+               [2 [300 300]]
+               [1 [40 300]]])
 
-(def bare-edges [[0 1 "red"]
-                [1 2 "blue"]
-                [2 3 "red"]
-                [3 1 "red"]])
+
+(def bare-edges [[0 1 :red]
+                 [1 2 :blue]
+                 [2 3 :red]
+                 [3 1 :red]])
+
+(def color->value {:red 1
+                   :blue 2})
 
 (defn name-edges [bare-edges]
   (let [edge-ids (map (partial str "edge") (range))]
@@ -91,7 +95,7 @@
 
 
 (defn make-edges [{:keys [vertices edges]}]
-  (vertex-id->points edges vertices))
+  (vertex-id->points edges (mapv second vertices)))
 
 
 (defn make-svg [[width height] edges]
@@ -109,19 +113,31 @@
                                 (make-svg [1000 1000]
                                           (make-edges world-state))])))
 
-(defn flip-edge [[left right color]]
-  [right left color])
+(defn ok-to-flip? [{:keys [vertices edges]} [left right color]]
+  (let [this-value (color->value color)
+        entering-right (filter #(= right (second (second %))) edges)
+        sum-into-right (apply + (map #(color->value ((second %) 2)) entering-right))
+        right-value (first (vertices right))]
+    (if (< (- sum-into-right this-value) right-value)
+      false
+      true)))
+
+(defn flip-edge [world-state [left right color :as edge]]
+  (if (ok-to-flip? world-state edge)
+    [right left color]
+    edge))
 
 
 (defn update-state [event world-state]
-  (let [clicked-what (event->targetid event)]
-    (if (= clicked-what "forsvg")
-      world-state
-      (update-in world-state [:edges clicked-what] flip-edge))))
+  (let [clicked-what (event->targetid event)
+        constrained-flip (partial flip-edge world-state)]
+    (if (re-matches #"edge.*" clicked-what)
+      (update-in world-state [:edges clicked-what] constrained-flip)
+      world-state)))
 
 (go
   (big-bang!
-    :initial-state {:vertices vertex-loc
+    :initial-state {:vertices vertices
                     :edges (name-edges bare-edges)}
     :to-draw draw-world
     :on-click update-state))
