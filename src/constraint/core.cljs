@@ -1,10 +1,26 @@
 (ns constraint.core
-  (:require-macros [cljs.core.async.macros :refer [go]])
+  (:require-macros [cljs.core.async.macros :refer [go alt!]])
+
   (:require
+    [dataview.loader :refer [fetch-text]]
     [dommy.core :as dommy]
-            [crate.core :as crate]
-            [clojure.string :as string]
-            [big-bang.core :refer [big-bang!]]))
+    [crate.core :as crate]
+    [clojure.string :as string]
+    [big-bang.core :refer [big-bang!]]
+    [cljs.reader :as reader]
+    [goog.net.XhrIo :as xhr]
+    [cljs.core.async :as async :refer [<! chan close!]]))
+
+(defn GET [url]
+  (let [ch (chan 1)]
+    (xhr/send url
+              (fn [event]
+                (let [res (-> event .-target .getResponseText)]
+                  (go (>! ch res)
+                      (close! ch)))))
+    ch))
+
+
 
 (def triangle-marker
   [:svg:marker
@@ -59,17 +75,6 @@
       (.-target)
       (.-id)))
 
-
-(def vertices [[0 [40 40]]
-               [1 [300 40]]
-               [2 [300 300]]
-               [1 [40 300]]])
-
-
-(def bare-edges [[0 1 :red]
-                 [1 2 :blue]
-                 [2 3 :red]
-                 [3 1 :red]])
 
 (def color->value {:red 1
                    :blue 2})
@@ -136,8 +141,12 @@
       world-state)))
 
 (go
-  (big-bang!
-    :initial-state {:vertices vertices
-                    :edges (name-edges bare-edges)}
-    :to-draw draw-world
-    :on-click update-state))
+  (let [vertices (<! (GET "/vertices.edn"))
+        bare-edges (<! (GET "/edges.edn"))]
+
+    (big-bang!
+      :initial-state {:vertices (reader/read-string vertices)
+                      :edges (name-edges (reader/read-string bare-edges))}
+      :to-draw draw-world
+      :on-click update-state))
+  )
