@@ -59,33 +59,40 @@
       (.-target)
       (.-id)))
 
-(defn click-handler [e]
-  (.log js/console (event->targetid e))
-  (js/alert "123"))
 
 (def vertex-loc [[40 40]
                  [300 40]
                  [300 300]
                  [40 300]])
 
-(def edges-vec [[0 1 "red"]
+(def bare-edges [[0 1 "red"]
                 [1 2 "blue"]
                 [2 3 "red"]
                 [3 1 "red"]])
 
-
-(defn edge->endpoints [locations [start end color]]
-  [(locations start) (locations end) color])
-
-
-(defn make-edges [edges locations]
-  (let [edge-ids (map (partial str "edge") (range))
-        edges-with-endpoints (map (partial edge->endpoints locations) edges)]
-    (into {} (map vector edge-ids edges-with-endpoints))))
+(defn name-edges [bare-edges]
+  (let [edge-ids (map (partial str "edge") (range))]
+    (into {}
+        (map vector edge-ids bare-edges))))
 
 
+(defn locate-vertices [locations [start end color]]
+  [(locations start)
+   (locations end)
+   color])
 
-(.log js/console (str (make-edges edges-vec vertex-loc)))
+
+(defn fmap [f m]
+  (into {} (for [[k v] m] [k (f v)])))
+
+
+(defn vertex-id->points [named-edges locations]
+  (fmap (partial locate-vertices locations) named-edges))
+
+
+(defn make-edges [{:keys [vertices edges]}]
+  (vertex-id->points edges vertices))
+
 
 (defn make-svg [[width height] edges]
   [:svg:svg {:width width :height height}
@@ -95,26 +102,26 @@
    (map svg-edge edges)])
 
 
-(map #(dommy.core/listen! % :click click-handler) (dommy.core/sel :.clickable))
 
-(defn draw-world [edges]
+(defn draw-world [world-state]
   (dommy/replace! (dommy.core/sel1 :#forsvg)
                   (crate/html [:div#forsvg
                                 (make-svg [1000 1000]
-                                          edges)])))
+                                          (make-edges world-state))])))
 
 (defn flip-edge [[left right color]]
   [right left color])
 
 
-(defn update-state [event edges]
+(defn update-state [event world-state]
   (let [clicked-what (event->targetid event)]
     (if (= clicked-what "forsvg")
-      edges
-      (update-in edges [clicked-what] flip-edge))))
+      world-state
+      (update-in world-state [:edges clicked-what] flip-edge))))
 
 (go
   (big-bang!
-    :initial-state (make-edges edges-vec vertex-loc)
+    :initial-state {:vertices vertex-loc
+                    :edges (name-edges bare-edges)}
     :to-draw draw-world
     :on-click update-state))
