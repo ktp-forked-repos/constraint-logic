@@ -102,8 +102,6 @@
   (vertex-id->points edges (mapv second vertices)))
 
 
-(defn make-vertices [vertices])
-
 
 (defn make-svg [[width height] {:keys [vertices edges] :as world-state}]
   [:svg:svg {:width width :height height}
