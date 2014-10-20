@@ -21,7 +21,6 @@
     ch))
 
 
-
 (def triangle-marker
   [:svg:marker
    {:id "Triangle"
@@ -32,21 +31,6 @@
     :markerHeight "3"
     :orient "auto"}
    [:svg:path {:d "M0,0 L 10,5 L0,10 z"}]])
-
-
-(def circle-marker
-  [:svg:marker
-   {:id "Vertex"
-    :refX "2"
-    :refY "2"
-    :markerWidth "5"
-    :markerHeight "5"
-    :orient "auto"}
-   [:svg:circle
-    {:fill "black"
-     :stroke "none"
-     :cx 2 :cy 2
-     :r 2}]])
 
 
 (defn make-line-dirs [from to]
@@ -63,9 +47,7 @@
     :stroke (name color)
     :stroke-width "10px"
     :fill "none"
-    ; :marker-start "url(#Vertex)"
     :marker-mid "url(#Triangle)"
-    ; :marker-end "url(#Vertex)"
     }])
 
 (def color->value {:red 1
