@@ -63,11 +63,31 @@
     :stroke (name color)
     :stroke-width "10px"
     :fill "none"
-    :marker-start "url(#Vertex)"
+    ; :marker-start "url(#Vertex)"
     :marker-mid "url(#Triangle)"
-    :marker-end "url(#Vertex)"}])
+    ; :marker-end "url(#Vertex)"
+    }])
 
+(def color->value {:red 1
+                   :blue 2})
 
+(defn svg-vertex [edges id [weight [x y]]]
+  (let [entering (filter #(= id (second (second %))) edges)
+        summed (apply + (map #(color->value ((second %) 2)) entering))]
+    (list
+      [:svg:circle
+       {:cx x :cy y
+        :r 25
+        :fill "white"
+        :stroke "black"
+        :stroke-width 3
+        }]
+      [:svg:text
+       {:x x :y (+ 5 y)
+        :fill "black"
+        :text-anchor "middle"}
+       (str id " (" summed "/" weight ")") ]))
+  )
 
 (defn event->targetid [e]
   (-> e
@@ -75,9 +95,6 @@
       (.-target)
       (.-id)))
 
-
-(def color->value {:red 1
-                   :blue 2})
 
 (defn name-edges [bare-edges]
   (let [edge-ids (map (partial str "edge") (range))]
@@ -103,20 +120,25 @@
   (vertex-id->points edges (mapv second vertices)))
 
 
-(defn make-svg [[width height] edges]
+(defn make-vertices [vertices])
+
+
+(defn make-svg [[width height] {:keys [vertices edges] :as world-state}]
   [:svg:svg {:width width :height height}
    [:svg:defs
     triangle-marker
     circle-marker]
-   (map svg-edge edges)])
+   (map svg-edge (make-edges world-state))
+   (map (partial svg-vertex edges) (range) vertices)
+
+   ])
 
 
 
 (defn draw-world [world-state]
   (dommy/replace! (dommy.core/sel1 :#forsvg)
                   (crate/html [:div#forsvg
-                                (make-svg [1000 1000]
-                                          (make-edges world-state))])))
+                                (make-svg [1000 1000] world-state)])))
 
 (defn ok-to-flip? [{:keys [vertices edges]} [left right color]]
   (let [this-value (color->value color)
