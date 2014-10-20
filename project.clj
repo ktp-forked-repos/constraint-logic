@@ -33,4 +33,13 @@
                         :compiler {:output-to "resources/public/constraint.js"
                                    :output-dir "resources/public/out"
                                    :optimizations :none
-                                   :source-map true}}]})
+                                   :source-map true}}
+
+                       {:id "release"
+                        :source-paths ["src/constraint"]
+                        :compiler {:output-to "resources/public/constraint_prod.js"
+                                   :output-dir "resources/public/prod-out"
+                                   :optimizations :advanced
+                                   :pretty-print false
+                                   :source-map "resources/public/constraint_prod.js.map"}}]})
+

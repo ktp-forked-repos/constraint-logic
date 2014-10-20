@@ -11,3 +11,6 @@ pom.xml.asc
 /resources/public/*.js
 /out
 .repl
+resources/public/prod-out
+resources/public/*.map
+
