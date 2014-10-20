@@ -106,8 +106,7 @@
 (defn make-svg [[width height] {:keys [vertices edges] :as world-state}]
   [:svg:svg {:width width :height height}
    [:svg:defs
-    triangle-marker
-    circle-marker]
+    triangle-marker]
    (map svg-edge (make-edges world-state))
    (map (partial svg-vertex edges) (range) vertices)
 
