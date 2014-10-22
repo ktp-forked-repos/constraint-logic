@@ -88,16 +88,16 @@
 
 
 
-(defn svg-vertex [edges id [weight [x y]]]
-  (let [vert-inflow (inflow edges id)
-        free (- vert-inflow weight)]
+(defn svg-vertex [id inflow [weight [x y]]]
+  (let [free (- inflow weight)]
     (list
       [:svg:circle
        {:cx x :cy y
         :r (+ 5 (* weight 10))
-        :fill (if (> free 0)
-                "white"
-                "gray")
+        :fill (cond
+                (> free 0) "white"
+                (= free 0) "gray"
+                :else      "red")
         :stroke "black"
         :stroke-width 3
         }]
@@ -105,7 +105,7 @@
        {:x x :y (+ 5 y)
         :fill "black"
         :text-anchor "middle"}
-       (str free) ]))
+       (str free)]))
   )
 
 
@@ -158,7 +158,7 @@
     triangle-marker-ok
     triangle-marker-not-ok]
    (map svg-edge (make-edges world-state))
-   (map (partial svg-vertex edges) (range) vertices)])
+   (map svg-vertex (range) (map (partial inflow edges) (range)) vertices)])
 
 
 
