@@ -143,8 +143,8 @@
       world-state)))
 
 (go
-  (let [vertices (<! (GET "/vertices.edn"))
-        bare-edges (<! (GET "/edges.edn"))]
+  (let [vertices (<! (GET "./vertices.edn"))
+        bare-edges (<! (GET "./edges.edn"))]
 
     (big-bang!
       :initial-state {:vertices (reader/read-string vertices)
