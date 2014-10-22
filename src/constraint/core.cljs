@@ -169,7 +169,10 @@
 
 
 (defn map-size [{:keys [vertices]}]
-  (map + [50 50] (apply (comp max (partial map vector)) vertices)))
+  (->> vertices
+       (map second)
+       (apply map max)
+       (map + [50 50])))
 
 
 (defn draw-world [world-state]
