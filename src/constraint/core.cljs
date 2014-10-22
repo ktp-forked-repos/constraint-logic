@@ -48,6 +48,7 @@
     :stroke-width "10px"
     :fill "none"
     :marker-mid "url(#Triangle)"
+    :opacity 0.6
     }])
 
 (def color->value {:red 1
@@ -142,8 +143,8 @@
       world-state)))
 
 (go
-  (let [vertices (<! (GET "./vertices.edn"))
-        bare-edges (<! (GET "./edges.edn"))]
+  (let [vertices (<! (GET "/vertices.edn"))
+        bare-edges (<! (GET "/edges.edn"))]
 
     (big-bang!
       :initial-state {:vertices (reader/read-string vertices)
