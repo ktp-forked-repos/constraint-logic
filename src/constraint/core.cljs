@@ -2,10 +2,10 @@
   (:require-macros [cljs.core.async.macros :refer [go alt!]])
 
   (:require
+    [constraint.svg :refer [make-svg]]
     [dataview.loader :refer [fetch-text]]
     [dommy.core :as dommy]
     [crate.core :as crate]
-    [clojure.string :as string]
     [big-bang.core :refer [big-bang!]]
     [cljs.reader :as reader]
     [goog.net.XhrIo :as xhr]
@@ -24,89 +24,14 @@
 
 
 
-(defn make-triangle-marker [id arrow]
-  [:svg:marker
-   {:id id
-    :viewBox "-5 -5 20 20"
-    :refX "5"
-    :refY "5"
-    :markerWidth "5"
-    :markerHeight "5"
-    :orient "auto"}
-   arrow])
-
-
 (def color->value {:red 1
                    :blue 2})
-
-(def arrow-path "M0,0 L 10,5 L0,10 z")
-
-(def triangle-marker-ok
-  (make-triangle-marker "TriangleOK"
-                        [:svg:path {:fill "white"
-                                    :stroke "black"
-                                    :d arrow-path}]))
-
-(def triangle-marker-not-ok
-  (make-triangle-marker "TriangleNotOK"
-                        [:svg:path {:fill "black"
-                                    :stroke "black"
-                                    :d arrow-path}]))
-
-
-
-(defn make-line-dirs [from to]
-  (let [middle (map (comp #(/ % 2) +) from to)
-        coords (map (partial string/join ",") [from middle to])]
-    (string/join " " (map str ["M" "L" "L"] coords))))
-
-
-
-(defn svg-edge [[id [from to color flippable?]]]
-  [:svg:path
-   {:class "clickable"
-    :id id
-    :d (make-line-dirs from to)
-    :stroke (name color)
-    :stroke-width "10px"
-    :fill "none"
-    :marker-mid (if flippable?
-                  "url(#TriangleOK)"
-                  "url(#TriangleNotOK)")
-    :opacity 0.6
-    }])
-
-
-
-
 
 (defn inflow [edges vertex]
   (let [in-going (for [[_ [_ to color]] edges
                        :when (= to vertex)]
                    (color->value color))]
     (apply + in-going)))
-
-
-
-(defn svg-vertex [[id inflow [weight [x y]]]]
-  (let [free (- inflow weight)]
-    (list
-      [:svg:circle
-       {:cx x :cy y
-        :r (+ 5 (* weight 10))
-        :fill (cond
-                (> free 0) "white"
-                (= free 0) "gray"
-                :else      "red")
-        :stroke "black"
-        :stroke-width 3
-        }]
-      [:svg:text
-       {:x x :y (+ 5 y)
-        :fill "black"
-        :text-anchor "middle"}
-       (str free)]))
-  )
 
 
 
@@ -141,6 +66,14 @@
 
 
 
+(defn map-size [{:keys [vertices]}]
+  (->> vertices
+       (map second)
+       (apply map max)
+       (map + [50 50])))
+
+
+
 (defn fmap [f m]
   (into {} (for [[k v] m] [k (f v)])))
 
@@ -151,28 +84,13 @@
     (fmap (partial prepare-edge locations world-state) edges)))
 
 
+
 (defn make-vertices [{:keys [vertices edges]}]
   (map vector
        (range)
        (map (partial inflow edges) (range))
        vertices))
 
-
-(defn make-svg [[width height] edges vertices]
-  [:svg:svg {:width width :height height}
-   [:svg:defs
-    triangle-marker-ok
-    triangle-marker-not-ok]
-   (map svg-edge edges)
-   (map svg-vertex vertices)])
-
-
-
-(defn map-size [{:keys [vertices]}]
-  (->> vertices
-       (map second)
-       (apply map max)
-       (map + [50 50])))
 
 
 (defn draw-world [world-state]
