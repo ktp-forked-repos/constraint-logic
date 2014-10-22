@@ -21,16 +21,24 @@
     ch))
 
 
-(def triangle-marker
+(defn make-triangle-marker [id arrow]
   [:svg:marker
-   {:id "Triangle"
-    :viewBox "0 0 10 10"
-    :refX "3"
+   {:id id
+    :viewBox "-5 -5 20 20"
+    :refX "5"
     :refY "5"
-    :markerWidth "3"
-    :markerHeight "3"
+    :markerWidth "7"
+    :markerHeight "7"
     :orient "auto"}
-   [:svg:path {:d "M0,0 L 10,5 L0,10 z"}]])
+   arrow])
+
+(def triangle-marker-ok
+  (make-triangle-marker "TriangleOK"
+        [:svg:path {:fill "white" :stroke "black" :d "M0,0 L 10,5 L0,10 z"}]))
+
+(def triangle-marker-not-ok
+  (make-triangle-marker "TriangleNotOK"
+    [:svg:path {:fill "black" :stroke "black" :d "M0,0 L 10,5 L0,10 z"}]))
 
 
 (defn make-line-dirs [from to]
@@ -39,7 +47,7 @@
     (string/join " " (map str ["M" "L" "L"] coords))))
 
 
-(defn svg-edge [[id [from to color]]]
+(defn svg-edge [[id [from to color flippable?]]]
   [:svg:path
    {:class "clickable"
     :id id
@@ -47,20 +55,31 @@
     :stroke (name color)
     :stroke-width "10px"
     :fill "none"
-    :marker-mid "url(#Triangle)"
+    :marker-mid (if flippable?
+                  "url(#TriangleOK)"
+                  "url(#TriangleNotOK)")
     :opacity 0.6
     }])
 
 (def color->value {:red 1
                    :blue 2})
 
+(defn inflow [edges vertex]
+  (let [in-going (for [[_ [_ to color]] edges
+                       :when (= to vertex)]
+                   (color->value color))]
+    (apply + in-going)))
+
 (defn svg-vertex [edges id [weight [x y]]]
-  (let [vert-inflow (inflow edges id)]
+  (let [vert-inflow (inflow edges id)
+        free (- vert-inflow weight)]
     (list
       [:svg:circle
        {:cx x :cy y
-        :r 25
-        :fill "white"
+        :r (+ 5 (* weight 10))
+        :fill (if (> free 0)
+                "white"
+                "black ")
         :stroke "black"
         :stroke-width 3
         }]
@@ -68,7 +87,7 @@
        {:x x :y (+ 5 y)
         :fill "black"
         :text-anchor "middle"}
-       (str id " (" vert-inflow "/" weight ")") ]))
+       (str free) ]))
   )
 
 (defn event->targetid [e]
@@ -83,30 +102,36 @@
     (into {}
         (map vector edge-ids bare-edges))))
 
+(defn ok-to-flip? [{:keys [vertices edges]} [_ to color]]
+  (let [edge-value (color->value color)
+        to-inflow (inflow edges to)
+        to-vertex-value (first (vertices to))]
+    (>= (- to-inflow edge-value) to-vertex-value)))
 
-(defn locate-vertices [locations [start end color]]
+
+(defn prepare-edge [locations world-state [start end color :as edge]]
   [(locations start)
    (locations end)
-   color])
+   color
+   (ok-to-flip? world-state edge)])
 
 
 (defn fmap [f m]
   (into {} (for [[k v] m] [k (f v)])))
 
 
-(defn vertex-id->points [named-edges locations]
-  (fmap (partial locate-vertices locations) named-edges))
-
-
-(defn make-edges [{:keys [vertices edges]}]
-  (vertex-id->points edges (mapv second vertices)))
+(defn make-edges [{:keys [vertices edges] :as world-state}]
+  (let [locations (mapv second vertices)]
+    (fmap (partial prepare-edge locations world-state) edges)
+    ))
 
 
 
 (defn make-svg [[width height] {:keys [vertices edges] :as world-state}]
   [:svg:svg {:width width :height height}
    [:svg:defs
-    triangle-marker]
+    triangle-marker-ok
+    triangle-marker-not-ok]
    (map svg-edge (make-edges world-state))
    (map (partial svg-vertex edges) (range) vertices)
 
@@ -119,17 +144,7 @@
                   (crate/html [:div#forsvg
                                 (make-svg [1000 1000] world-state)])))
 
-(defn inflow [edges vertex]
-  (let [in-going (for [[_ [_ to color]] edges
-                       :when (= to vertex)]
-                   (color->value color))]
-    (apply + in-going)))
 
-(defn ok-to-flip? [{:keys [vertices edges]} [_ to color]]
-  (let [edge-value (color->value color)
-        to-inflow (inflow edges to)
-        to-vertex-value (first (vertices to))]
-    (>= (- to-inflow edge-value) to-vertex-value)))
 
 (defn flip-edge [world-state [from to color :as edge]]
   (if (ok-to-flip? world-state edge)
