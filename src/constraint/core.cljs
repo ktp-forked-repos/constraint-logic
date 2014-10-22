@@ -55,8 +55,7 @@
                    :blue 2})
 
 (defn svg-vertex [edges id [weight [x y]]]
-  (let [entering (filter #(= id (second (second %))) edges)
-        summed (apply + (map #(color->value ((second %) 2)) entering))]
+  (let [vert-inflow (inflow edges id)]
     (list
       [:svg:circle
        {:cx x :cy y
@@ -69,7 +68,7 @@
        {:x x :y (+ 5 y)
         :fill "black"
         :text-anchor "middle"}
-       (str id " (" summed "/" weight ")") ]))
+       (str id " (" vert-inflow "/" weight ")") ]))
   )
 
 (defn event->targetid [e]
@@ -120,18 +119,21 @@
                   (crate/html [:div#forsvg
                                 (make-svg [1000 1000] world-state)])))
 
-(defn ok-to-flip? [{:keys [vertices edges]} [left right color]]
-  (let [this-value (color->value color)
-        entering-right (filter #(= right (second (second %))) edges)
-        sum-into-right (apply + (map #(color->value ((second %) 2)) entering-right))
-        right-value (first (vertices right))]
-    (if (< (- sum-into-right this-value) right-value)
-      false
-      true)))
+(defn inflow [edges vertex]
+  (let [in-going (for [[_ [_ to color]] edges
+                       :when (= to vertex)]
+                   (color->value color))]
+    (apply + in-going)))
 
-(defn flip-edge [world-state [left right color :as edge]]
+(defn ok-to-flip? [{:keys [vertices edges]} [_ to color]]
+  (let [edge-value (color->value color)
+        to-inflow (inflow edges to)
+        to-vertex-value (first (vertices to))]
+    (>= (- to-inflow edge-value) to-vertex-value)))
+
+(defn flip-edge [world-state [from to color :as edge]]
   (if (ok-to-flip? world-state edge)
-    [right left color]
+    [to from color]
     edge))
 
 
