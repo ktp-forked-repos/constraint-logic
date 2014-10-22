@@ -11,6 +11,8 @@
     [goog.net.XhrIo :as xhr]
     [cljs.core.async :as async :refer [<! chan close!]]))
 
+
+
 (defn GET [url]
   (let [ch (chan 1)]
     (xhr/send url
@@ -21,30 +23,43 @@
     ch))
 
 
+
 (defn make-triangle-marker [id arrow]
   [:svg:marker
    {:id id
     :viewBox "-5 -5 20 20"
     :refX "5"
     :refY "5"
-    :markerWidth "7"
-    :markerHeight "7"
+    :markerWidth "5"
+    :markerHeight "5"
     :orient "auto"}
    arrow])
 
+
+(def color->value {:red 1
+                   :blue 2})
+
+(def arrow-path "M0,0 L 10,5 L0,10 z")
+
 (def triangle-marker-ok
   (make-triangle-marker "TriangleOK"
-        [:svg:path {:fill "white" :stroke "black" :d "M0,0 L 10,5 L0,10 z"}]))
+                        [:svg:path {:fill "white"
+                                    :stroke "black"
+                                    :d arrow-path}]))
 
 (def triangle-marker-not-ok
   (make-triangle-marker "TriangleNotOK"
-    [:svg:path {:fill "black" :stroke "black" :d "M0,0 L 10,5 L0,10 z"}]))
+                        [:svg:path {:fill "black"
+                                    :stroke "black"
+                                    :d arrow-path}]))
+
 
 
 (defn make-line-dirs [from to]
   (let [middle (map (comp #(/ % 2) +) from to)
         coords (map (partial string/join ",") [from middle to])]
     (string/join " " (map str ["M" "L" "L"] coords))))
+
 
 
 (defn svg-edge [[id [from to color flippable?]]]
@@ -61,14 +76,17 @@
     :opacity 0.6
     }])
 
-(def color->value {:red 1
-                   :blue 2})
+
+
+
 
 (defn inflow [edges vertex]
   (let [in-going (for [[_ [_ to color]] edges
                        :when (= to vertex)]
                    (color->value color))]
     (apply + in-going)))
+
+
 
 (defn svg-vertex [edges id [weight [x y]]]
   (let [vert-inflow (inflow edges id)
@@ -79,7 +97,7 @@
         :r (+ 5 (* weight 10))
         :fill (if (> free 0)
                 "white"
-                "black ")
+                "gray")
         :stroke "black"
         :stroke-width 3
         }]
@@ -90,6 +108,8 @@
        (str free) ]))
   )
 
+
+
 (defn event->targetid [e]
   (-> e
       (js->clj)
@@ -97,16 +117,20 @@
       (.-id)))
 
 
+
 (defn name-edges [bare-edges]
   (let [edge-ids (map (partial str "edge") (range))]
     (into {}
         (map vector edge-ids bare-edges))))
+
+
 
 (defn ok-to-flip? [{:keys [vertices edges]} [_ to color]]
   (let [edge-value (color->value color)
         to-inflow (inflow edges to)
         to-vertex-value (first (vertices to))]
     (>= (- to-inflow edge-value) to-vertex-value)))
+
 
 
 (defn prepare-edge [locations world-state [start end color :as edge]]
@@ -116,14 +140,15 @@
    (ok-to-flip? world-state edge)])
 
 
+
 (defn fmap [f m]
   (into {} (for [[k v] m] [k (f v)])))
 
 
+
 (defn make-edges [{:keys [vertices edges] :as world-state}]
   (let [locations (mapv second vertices)]
-    (fmap (partial prepare-edge locations world-state) edges)
-    ))
+    (fmap (partial prepare-edge locations world-state) edges)))
 
 
 
@@ -133,9 +158,7 @@
     triangle-marker-ok
     triangle-marker-not-ok]
    (map svg-edge (make-edges world-state))
-   (map (partial svg-vertex edges) (range) vertices)
-
-   ])
+   (map (partial svg-vertex edges) (range) vertices)])
 
 
 
@@ -152,12 +175,15 @@
     edge))
 
 
+
 (defn update-state [event world-state]
   (let [clicked-what (event->targetid event)
         constrained-flip (partial flip-edge world-state)]
     (if (re-matches #"edge.*" clicked-what)
       (update-in world-state [:edges clicked-what] constrained-flip)
       world-state)))
+
+
 
 (go
   (let [vertices (<! (GET "./vertices.edn"))
