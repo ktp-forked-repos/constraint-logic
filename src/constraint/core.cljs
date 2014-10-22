@@ -186,12 +186,10 @@
 
 
 (go
-  (let [vertices (<! (GET "./vertices.edn"))
-        bare-edges (<! (GET "./edges.edn"))]
-
+  (let [state (update-in (reader/read-string (<! (GET "./state.edn")))
+                         [:edges] name-edges)]
     (big-bang!
-      :initial-state {:vertices (reader/read-string vertices)
-                      :edges (name-edges (reader/read-string bare-edges))}
+      :initial-state state
       :to-draw draw-world
       :on-click update-state))
   )
