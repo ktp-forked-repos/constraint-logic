@@ -88,7 +88,7 @@
 
 
 
-(defn svg-vertex [id inflow [weight [x y]]]
+(defn svg-vertex [[id inflow [weight [x y]]]]
   (let [free (- inflow weight)]
     (list
       [:svg:circle
@@ -151,21 +151,33 @@
     (fmap (partial prepare-edge locations world-state) edges)))
 
 
+(defn make-vertices [{:keys [vertices edges]}]
+  (map vector
+       (range)
+       (map (partial inflow edges) (range))
+       vertices))
 
-(defn make-svg [[width height] {:keys [vertices edges] :as world-state}]
+
+(defn make-svg [[width height] edges vertices]
   [:svg:svg {:width width :height height}
    [:svg:defs
     triangle-marker-ok
     triangle-marker-not-ok]
-   (map svg-edge (make-edges world-state))
-   (map svg-vertex (range) (map (partial inflow edges) (range)) vertices)])
+   (map svg-edge edges)
+   (map svg-vertex vertices)])
 
+
+
+(defn map-size [{:keys [vertices]}]
+  (map + [50 50] (apply (comp max (partial map vector)) vertices)))
 
 
 (defn draw-world [world-state]
   (dommy/replace! (dommy.core/sel1 :#forsvg)
                   (crate/html [:div#forsvg
-                                (make-svg [1000 1000] world-state)])))
+                               (make-svg (map-size world-state)
+                                         (make-edges world-state)
+                                         (make-vertices world-state))])))
 
 
 
