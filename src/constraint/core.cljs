@@ -121,15 +121,13 @@
 
 (defn update-state [event world-state]
   (let [clicked-what (event->targetid event)
-        constrained-flip (partial flip-edge world-state)]
+        constrained-flip (partial flip-edge world-state)
+        is-edge? (re-matches #"edge.*" clicked-what)
+        is-vertex? (re-matches #"vertex.*" clicked-what)
+        ]
     (cond
-      (re-matches #"edge.*" clicked-what) (update-in world-state
-                                                     [:edges clicked-what]
-                                                     constrained-flip)
-
-      (re-matches #"vertex.*" clicked-what) (do
-                                               (.log js/console clicked-what)
-                                               world-state)
+      is-edge? (update-in world-state [:edges clicked-what] constrained-flip)
+      is-vertex? (update-in world-state [:moving-vertex] not)
       :else world-state)))
 
 
@@ -138,9 +136,10 @@
   (let [read-state (reader/read-string (<! (GET "./state.edn")))
         named-edges (update-in read-state [:edges]
                               (comp name-vertices-in-all-edges name-edges))
-        named-vertices (update-in named-edges [:vertices] name-vertices)]
+        named-vertices (update-in named-edges [:vertices] name-vertices)
+        state (conj named-vertices {:moving-vertex false})]
     (big-bang!
-      :initial-state named-vertices
+      :initial-state state
       :to-draw draw-world
       :on-click update-state))
   )
