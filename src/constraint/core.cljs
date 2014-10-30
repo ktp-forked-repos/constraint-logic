@@ -41,17 +41,30 @@
       (.-target)
       (.-id)))
 
+(def vert-id "vertex")
+(def str-vert-id (partial str vert-id))
+(def edge-id "edge")
 
 (defn nameless->named-map [the-name coll]
   (let [ids (map (partial str the-name) (range))]
     (into {} (map vector ids coll))))
 
 (def name-edges
-  (partial nameless->named-map "edge"))
+  (partial nameless->named-map edge-id))
 
 (def name-vertices
-  (partial nameless->named-map "vertex"))
+  (partial nameless->named-map vert-id))
 
+(defn name-vertices-in-one-edge [[start end color]]
+  [(str-vert-id start)
+   (str-vert-id end)
+   color])
+
+(defn fmap [f m]
+  (into {} (for [[k v] m] [k (f v)])))
+
+(defn name-vertices-in-all-edges [edges]
+  (fmap name-vertices-in-one-edge edges))
 
 (defn ok-to-flip? [{:keys [vertices edges]} [_ to color]]
   (let [edge-value (color->value color)
@@ -77,29 +90,23 @@
 
 
 
-(defn fmap [f m]
-  (into {} (for [[k v] m] [k (f v)])))
-
-
-
 (defn make-edges [{:keys [vertices edges] :as world-state}]
-  (let [locations (mapv second vertices)]
+  (let [locations (fmap second vertices)]
     (fmap (partial prepare-edge locations world-state) edges)))
 
 
 
 (defn make-vertices [{:keys [vertices edges]}]
-  (map vector
-       (map (partial str "vertex") (range))
-       (map (partial inflow edges) (range))
-       vertices))
+  (for [[vid _ :as all] vertices]
+    (conj all (inflow edges vid))))
 
 
 
 (defn draw-world [world-state]
   (dommy/replace! (dommy.core/sel1 :#forsvg)
                   (crate/html [:div#forsvg
-                               (make-svg (map-size world-state)
+                               ;(make-svg (map-size world-state)
+                               (make-svg [2000 2000]
                                          (make-edges world-state)
                                          (make-vertices world-state))])))
 
@@ -122,10 +129,14 @@
 
 
 (go
-  (let [state (update-in (reader/read-string (<! (GET "./state.edn")))
-                         [:edges] name-edges)]
+  (let [read-state (reader/read-string (<! (GET "./state.edn")))
+        named-edges (update-in read-state [:edges] name-edges)
+        named-vertices (update-in named-edges [:vertices] name-vertices)
+        named-vertices-in-edges (update-in named-vertices
+                                           [:edges]
+                                           name-vertices-in-all-edges)]
     (big-bang!
-      :initial-state state
+      :initial-state named-vertices-in-edges
       :to-draw draw-world
       :on-click update-state))
   )

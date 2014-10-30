@@ -56,7 +56,7 @@
 
 
 
-(defn svg-vertex [[id inflow [weight [x y]]]]
+(defn svg-vertex [[id [weight [x y]] inflow]]
   (let [free (- inflow weight)]
     (list
       [:svg:circle
