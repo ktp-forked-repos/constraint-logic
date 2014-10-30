@@ -130,13 +130,11 @@
 
 (go
   (let [read-state (reader/read-string (<! (GET "./state.edn")))
-        named-edges (update-in read-state [:edges] name-edges)
-        named-vertices (update-in named-edges [:vertices] name-vertices)
-        named-vertices-in-edges (update-in named-vertices
-                                           [:edges]
-                                           name-vertices-in-all-edges)]
+        named-edges (update-in read-state [:edges]
+                              (comp name-vertices-in-all-edges name-edges))
+        named-vertices (update-in named-edges [:vertices] name-vertices)]
     (big-bang!
-      :initial-state named-vertices-in-edges
+      :initial-state named-vertices
       :to-draw draw-world
       :on-click update-state))
   )
