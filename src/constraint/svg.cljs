@@ -60,7 +60,9 @@
   (let [free (- inflow weight)]
     (list
       [:svg:circle
-       {:cx x :cy y
+       {:class "clickable"
+        :id id
+        :cx x :cy y
         :r (+ 5 (* weight 10))
         :fill (cond
                 (> free 0) "white"
@@ -70,7 +72,9 @@
         :stroke-width 3
         }]
       [:svg:text
-       {:x x :y (+ 5 y)
+       {:class "clickable"
+        :id id
+        :x x :y (+ 5 y)
         :fill "black"
         :text-anchor "middle"}
        (str free)])))

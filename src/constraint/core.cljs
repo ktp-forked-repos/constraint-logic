@@ -42,12 +42,15 @@
       (.-id)))
 
 
+(defn nameless->named-map [the-name coll]
+  (let [ids (map (partial str the-name) (range))]
+    (into {} (map vector ids coll))))
 
-(defn name-edges [bare-edges]
-  (let [edge-ids (map (partial str "edge") (range))]
-    (into {}
-        (map vector edge-ids bare-edges))))
+(def name-edges
+  (partial nameless->named-map "edge"))
 
+(def name-vertices
+  (partial nameless->named-map "vertex"))
 
 
 (defn ok-to-flip? [{:keys [vertices edges]} [_ to color]]
@@ -87,7 +90,7 @@
 
 (defn make-vertices [{:keys [vertices edges]}]
   (map vector
-       (range)
+       (map (partial str "vertex") (range))
        (map (partial inflow edges) (range))
        vertices))
 
