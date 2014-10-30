@@ -84,6 +84,7 @@
 
 (defn map-size [{:keys [vertices]}]
   (->> vertices
+       (vals)
        (map second)
        (apply map max)
        (map + [50 50])))
@@ -105,8 +106,7 @@
 (defn draw-world [world-state]
   (dommy/replace! (dommy.core/sel1 :#forsvg)
                   (crate/html [:div#forsvg
-                               ;(make-svg (map-size world-state)
-                               (make-svg [2000 2000]
+                               (make-svg (map-size world-state)
                                          (make-edges world-state)
                                          (make-vertices world-state))])))
 
