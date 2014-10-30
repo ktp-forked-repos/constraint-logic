@@ -122,9 +122,15 @@
 (defn update-state [event world-state]
   (let [clicked-what (event->targetid event)
         constrained-flip (partial flip-edge world-state)]
-    (if (re-matches #"edge.*" clicked-what)
-      (update-in world-state [:edges clicked-what] constrained-flip)
-      world-state)))
+    (cond
+      (re-matches #"edge.*" clicked-what) (update-in world-state
+                                                     [:edges clicked-what]
+                                                     constrained-flip)
+
+      (re-matches #"vertex.*" clicked-what) (do
+                                               (.log js/console clicked-what)
+                                               world-state)
+      :else world-state)))
 
 
 
