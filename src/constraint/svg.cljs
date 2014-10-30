@@ -55,33 +55,36 @@
     }])
 
 
+(defn vertex [[x y] free size]
+  (list [:svg:circle {:cx x :cy y
+                      :r size
+                      :fill (cond
+                              (> free 0) "white"
+                              (= free 0) "gray"
+                              :else      "red")
+                      :stroke "black"
+                      :stroke-width 3}]
+        [:svg:text {:x x :y (+ 5 y)
+                    :fill "black"
+                    :text-anchor "middle"}
+         (str free)]))
 
-(defn svg-vertex [[id [weight [x y]] inflow]]
-  (let [free (- inflow weight)]
-    (list
-      [:svg:g
-       [:svg:circle
-        {:cx x :cy y
-         :r (+ 5 (* weight 10))
-         :fill (cond
-                 (> free 0) "white"
-                 (= free 0) "gray"
-                 :else      "red")
-         :stroke "black"
-         :stroke-width 3
-         }]
-       [:svg:text
-        {:x x :y (+ 5 y)
-         :fill "black"
-         :text-anchor "middle"}
-        (str free)]
-       [:svg:circle
-        {:class "clickable"
-         :id id
-         :cx x :cy y
-         :r (+ 5 (* weight 10))
-         :fill "none"
-         :pointer-events "all"}]])))
+(defn cellophane [id [x y] size]
+  "creates a clickable invisible circle, a layer above the vertex to handle problems with clicking on the internal text"
+  [:svg:circle
+      {:class "clickable"
+       :id id
+       :cx x :cy y
+       :r size
+       :fill "none"
+       :pointer-events "all"}])
+
+(defn svg-vertex [[id [weight pos] inflow]]
+  (let [free (- inflow weight)
+        size (+ 5 (* weight 10))]
+    [:svg:g
+     (vertex pos free size)
+     (cellophane id pos size)]))
 
 
 
@@ -97,5 +100,6 @@
     {:id "workaround"
      :x 0 :y 0
      :width 1 :height 1}]
+
    (map svg-edge edges)
    (map svg-vertex vertices)])
