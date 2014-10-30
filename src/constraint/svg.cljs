@@ -59,25 +59,29 @@
 (defn svg-vertex [[id [weight [x y]] inflow]]
   (let [free (- inflow weight)]
     (list
-      [:svg:circle
-       {:class "clickable"
-        :id id
-        :cx x :cy y
-        :r (+ 5 (* weight 10))
-        :fill (cond
-                (> free 0) "white"
-                (= free 0) "gray"
-                :else      "red")
-        :stroke "black"
-        :stroke-width 3
-        }]
-      [:svg:text
-       {:class "clickable"
-        :id id
-        :x x :y (+ 5 y)
-        :fill "black"
-        :text-anchor "middle"}
-       (str free)])))
+      [:svg:g
+       [:svg:circle
+        {:cx x :cy y
+         :r (+ 5 (* weight 10))
+         :fill (cond
+                 (> free 0) "white"
+                 (= free 0) "gray"
+                 :else      "red")
+         :stroke "black"
+         :stroke-width 3
+         }]
+       [:svg:text
+        {:x x :y (+ 5 y)
+         :fill "black"
+         :text-anchor "middle"}
+        (str free)]
+       [:svg:circle
+        {:class "clickable"
+         :id id
+         :cx x :cy y
+         :r (+ 5 (* weight 10))
+         :fill "none"
+         :pointer-events "all"}]])))
 
 
 
@@ -86,5 +90,12 @@
    [:svg:defs
     triangle-marker-ok
     triangle-marker-not-ok]
+
+   ; this is a workaround for firefoxes resizing of getBoundingClientRect when
+   ; moving the svg elements
+   [:svg:rect
+    {:id "workaround"
+     :x 0 :y 0
+     :width 1 :height 1}]
    (map svg-edge edges)
    (map svg-vertex vertices)])
