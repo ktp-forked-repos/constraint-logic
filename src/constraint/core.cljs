@@ -128,26 +128,34 @@
     edge))
 
 (defn move-the-vertex [world-state event]
-  (let [moving (:vertex-moving world-state)
+  (let [moving (:selected world-state)
         rect (.getBoundingClientRect (dommy.core/sel1 :svg))
         pos [(- (.-clientX event) (.-left rect))
              (- (.-clientY event) (.-top rect))]]
-    (-> world-state
-        (update-in [:vertices moving 1] (constantly pos))
-        (update-in [:moving?] not))))
+    (update-in world-state [:vertices moving 1] (constantly pos))))
 
+
+(defn edit-vertex-or-connections [clicked-vertex world-state]
+  (let [selected (:selected world-state)]
+    (if (= selected clicked-vertex)
+      (update-in world-state [:vertices selected 0] #(inc (mod % 2)))
+      world-state ; connect/disconnect
+      )))
 
 (defn handle-editing [event world-state]
   (let [clicked-what (event->targetid event)
         clicked-edge? (re-matches #"edge.*" clicked-what)
         clicked-vertex? (re-matches #"vertex.*" clicked-what)]
-    (cond
-      (:moving? world-state) (move-the-vertex world-state event)
-      clicked-edge? (update-in world-state [:edges clicked-what 2]
-                               #(if (= :blue %) :red :blue))
-      clicked-vertex? (merge world-state {:moving? true
-                                          :vertex-moving clicked-what})
-      :else world-state)))
+    (if (:selected world-state)
+      (merge (if clicked-vertex?
+               (edit-vertex-or-connections clicked-what world-state)
+               (move-the-vertex world-state event))
+        {:selected nil})
+      (cond
+        clicked-edge? (update-in world-state [:edges clicked-what 2]
+                                 #(if (= :blue %) :red :blue))
+        clicked-vertex? (merge world-state {:selected clicked-what})
+        :else world-state))))
 
 
 (defn handle-playing [clicked-what world-state]
@@ -167,8 +175,7 @@
         is-vertex? (re-matches #"vertex.*" clicked-what)]
     (if (:editing? world-state)
       (if clicked-edit?
-        (merge world-state {:moving? false
-                            :vertex-moving nil
+        (merge world-state {:selected nil
                             :editing? false})
         (handle-editing event world-state))
       (handle-playing clicked-what world-state))))
@@ -179,8 +186,7 @@
                                (comp name-vertices-in-all-edges name-edges))
         named-vertices (update-in named-edges [:vertices] name-vertices)
         added-edit (merge named-vertices {:editing? false
-                                          :vertex-moving nil
-                                          :moving? false})]
+                                          :selected nil})]
     added-edit))
 
 
