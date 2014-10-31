@@ -4,6 +4,7 @@
   (:require
     [constraint.svg :refer [make-svg]]
     [dataview.loader :refer [fetch-text]]
+    [clojure.string :as string]
     [dommy.core :as dommy]
     [crate.core :as crate]
     [big-bang.core :refer [big-bang!]]
@@ -113,6 +114,10 @@
 
 
 (defn draw-world [world-state]
+  (dommy/set-text! (dommy.core/sel1 :#data)
+                              (string/replace (str world-state)
+                                              #", "
+                                              ", \n"))
   (dommy/replace! (dommy.core/sel1 :#forsvg)
                   (crate/html [:div#forsvg
                                (make-svg (map-size world-state)
