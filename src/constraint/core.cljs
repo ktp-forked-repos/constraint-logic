@@ -135,20 +135,20 @@
              (- (.-clientY event) (.-top rect))]]
     (update-in world-state [:vertices moving 1] (constantly pos))))
 
-(defn largest-key [the-map]
-  (-> the-map
-      (keys)
+(defn get-key [edge-str]
+  (->> edge-str
+       (drop 4)
+       (apply str)
+       (js/parseInt)))
+
+(defn largest-key [{:keys [edges]}]
+  (-> (map get-key (keys edges))
       (sort)
       (reverse)
       (first)))
 
-(defn next-key [a-key]
-  (str edge-id
-       (->> a-key
-            (drop 4)
-            (apply str)
-            (js/parseInt)
-            (inc))))
+(defn next-key [key-num]
+  (str edge-id (inc key-num)))
 
 (defn get-connected-edges [from to {:keys [edges]}]
   (let [both-ways #{[from to] [to from]}]
@@ -157,7 +157,7 @@
 
 (defn connect-or-disconnect [from to world-state]
   (let [connected-id (first (first (get-connected-edges from to world-state)))
-        next-to-largest-key (next-key (largest-key (:edges world-state)))
+        next-to-largest-key (next-key (largest-key world-state))
         new-edge [next-to-largest-key [from to :red]]]
     (update-in world-state
                [:edges]
