@@ -91,13 +91,13 @@
    [:svg:rect
     {:x x :y y
      :width width :height height
-     :fill (if editing? "green" "gray")}]
+     :fill (if editing? "green" "blue")}]
    [:svg:text {:x (+ x (/ width 2))
                :y (+ y 5 (/ height 2))
                :fill "white"
                :text-anchor "middle"}
     (if editing?
-      "editing"
+      "play"
       "edit")]
    [:svg:rect
     {:class "cellophane"

@@ -134,12 +134,30 @@
              (- (.-clientY event) (.-top rect))]]
     (update-in world-state [:vertices moving 1] (constantly pos))))
 
+(defn connect-or-disconnect [from to world-state]
+  (let [connections (filter #(#{[from to] [to from]}
+                                      (butlast (second %))) (:edges world-state))
+        largest-key (-> (:edges world-state)
+                        (keys)
+                        (sort)
+                        (reverse)
+                        (first))
+        next-key (str edge-id (->> largest-key
+                                   (drop 4)
+                                   (apply str)
+                                   (js/parseInt)
+                                   (inc)))]
+    (if (empty? connections)
+      (update-in world-state [:edges] #(conj % [next-key [from to :red]]))
+      (update-in world-state [:edges] #(dissoc % (first (first connections)))))
+    )
+  )
 
 (defn edit-vertex-or-connections [clicked-vertex world-state]
   (let [selected (:selected world-state)]
     (if (= selected clicked-vertex)
       (update-in world-state [:vertices selected 0] #(inc (mod % 2)))
-      world-state ; connect/disconnect
+      (connect-or-disconnect selected clicked-vertex world-state)
       )))
 
 (defn handle-editing [event world-state]
