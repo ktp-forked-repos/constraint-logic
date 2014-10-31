@@ -55,10 +55,11 @@
     }])
 
 
-(defn vertex [[x y] free size]
+(defn vertex [[x y] free size selected?]
   (list [:svg:circle {:cx x :cy y
                       :r size
                       :fill (cond
+                              selected?  "yellow"
                               (> free 0) "white"
                               (= free 0) "gray"
                               :else      "red")
@@ -79,11 +80,12 @@
     :fill "none"
     :pointer-events "all"}])
 
-(defn svg-vertex [[id [weight pos inflow]]]
+(defn svg-vertex [selected [id [weight pos inflow]]]
   (let [free (- inflow weight)
-        size (+ 5 (* weight 10))]
+        size (+ 5 (* weight 10))
+        selected? (= id selected)]
     [:svg:g
-     (vertex pos free size)
+     (vertex pos free size selected?)
      (cellophane id pos size)]))
 
 (defn edit-button [x y width height editing?]
@@ -110,7 +112,7 @@
      :pointer-events "all"}] ])
 
 
-(defn make-svg [[width height] edges vertices editing?]
+(defn make-svg [[width height] edges vertices editing? selected]
   [:svg:svg {:width width :height height}
    [:svg:defs
     triangle-marker-ok
@@ -127,4 +129,4 @@
 
 
    (map svg-edge edges)
-   (map svg-vertex vertices)])
+   (map (partial svg-vertex selected) vertices)])

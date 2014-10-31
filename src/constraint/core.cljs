@@ -118,7 +118,8 @@
                                (make-svg (map-size world-state)
                                          (prepare-edges world-state)
                                          (prepare-vertices world-state)
-                                         (:editing? world-state))])))
+                                         (:editing? world-state)
+                                         (:selected world-state))])))
 
 
 
