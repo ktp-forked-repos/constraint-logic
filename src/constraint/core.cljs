@@ -118,7 +118,7 @@
                                (make-svg (map-size world-state)
                                          (prepare-edges world-state)
                                          (prepare-vertices world-state)
-                                         (:edit world-state))])))
+                                         (:editing? world-state))])))
 
 
 
@@ -134,44 +134,50 @@
              (- (.-clientY event) (.-top rect))]]
     (-> world-state
         (update-in [:vertices moving 1] (constantly pos))
-        (update-in [:moving] not))))
+        (update-in [:moving?] not))))
 
 
 (defn handle-editing [event world-state]
   (let [clicked-what (event->targetid event)
-        is-vertex? (re-matches #"vertex.*" clicked-what)]
+        clicked-vertex? (re-matches #"vertex.*" clicked-what)]
     (cond
-      (:moving world-state) (move-the-vertex world-state event)
-      is-vertex? (merge world-state {:moving true
-                                     :vertex-moving clicked-what})
+      (:moving? world-state) (move-the-vertex world-state event)
+      clicked-vertex? (merge world-state {:moving? true
+                                          :vertex-moving clicked-what})
+      :else world-state)))
+
+
+(defn handle-playing [clicked-what world-state]
+  (let [clicked-edit? (re-matches #"edit" clicked-what)
+        clicked-edge? (re-matches #"edge.*" clicked-what)]
+    (cond
+      clicked-edit? (update-in world-state [:editing?] not)
+      clicked-edge? (update-in world-state
+                               [:edges clicked-what]
+                               (partial flip-edge world-state))
       :else world-state)))
 
 
 (defn update-state [event world-state]
   (let [clicked-what (event->targetid event)
-        constrained-flip (partial flip-edge world-state)
-        is-edit? (re-matches #"edit" clicked-what)
-        is-edge? (re-matches #"edge.*" clicked-what)
+        clicked-edit? (re-matches #"edit" clicked-what)
         is-vertex? (re-matches #"vertex.*" clicked-what)]
-    (if (:edit world-state)
-      (if is-edit?
-        (merge world-state {:moving false
+    (if (:editing? world-state)
+      (if clicked-edit?
+        (merge world-state {:moving? false
                             :vertex-moving nil
-                            :edit false})
+                            :editing? false})
         (handle-editing event world-state))
-      (cond
-        is-edit? (update-in world-state [:edit] not)
-        is-edge? (update-in world-state [:edges clicked-what] constrained-flip)
-        :else world-state))))
+      (handle-playing clicked-what world-state))))
 
 
 (defn parse-state [state]
   (let [named-edges (update-in state [:edges]
                                (comp name-vertices-in-all-edges name-edges))
         named-vertices (update-in named-edges [:vertices] name-vertices)
-        added-edit (merge named-vertices {:edit false
+        added-edit (merge named-vertices {:editing? false
                                           :vertex-moving nil
-                                          :moving false})]
+                                          :moving? false})]
     added-edit))
 
 
