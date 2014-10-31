@@ -79,7 +79,7 @@
        :fill "none"
        :pointer-events "all"}])
 
-(defn svg-vertex [[id [weight pos] inflow]]
+(defn svg-vertex [[id [weight pos inflow]]]
   (let [free (- inflow weight)
         size (+ 5 (* weight 10))]
     [:svg:g

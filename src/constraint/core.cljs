@@ -91,15 +91,24 @@
 
 
 
-(defn make-edges [{:keys [vertices edges] :as world-state}]
+(defn prepare-edges [{:keys [vertices edges] :as world-state}]
   (let [locations (fmap second vertices)]
     (fmap (partial prepare-edge locations world-state) edges)))
 
 
 
-(defn make-vertices [{:keys [vertices edges]}]
+(defn flip [function]
+  (fn
+    ([] (function))
+    ([x] (function x))
+    ([x y] (function y x))))
+
+
+
+(defn prepare-vertices [{:keys [vertices edges]}]
   (for [[vertex-id _ :as all] vertices]
-    (conj all (inflow edges vertex-id))))
+    (update-in all [1]
+               (partial (flip conj) (inflow edges vertex-id)))))
 
 
 
@@ -107,8 +116,8 @@
   (dommy/replace! (dommy.core/sel1 :#forsvg)
                   (crate/html [:div#forsvg
                                (make-svg (map-size world-state)
-                                         (make-edges world-state)
-                                         (make-vertices world-state))])))
+                                         (prepare-edges world-state)
+                                         (prepare-vertices world-state))])))
 
 
 
