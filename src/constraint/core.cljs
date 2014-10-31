@@ -139,9 +139,12 @@
 
 (defn handle-editing [event world-state]
   (let [clicked-what (event->targetid event)
+        clicked-edge? (re-matches #"edge.*" clicked-what)
         clicked-vertex? (re-matches #"vertex.*" clicked-what)]
     (cond
       (:moving? world-state) (move-the-vertex world-state event)
+      clicked-edge? (update-in world-state [:edges clicked-what 2]
+                               #(if (= :blue %) :red :blue))
       clicked-vertex? (merge world-state {:moving? true
                                           :vertex-moving clicked-what})
       :else world-state)))
