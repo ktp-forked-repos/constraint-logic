@@ -72,12 +72,12 @@
 (defn cellophane [id [x y] size]
   "creates a clickable invisible circle, a layer above the vertex to handle problems with clicking on the internal text"
   [:svg:circle
-      {:class "clickable"
-       :id id
-       :cx x :cy y
-       :r size
-       :fill "none"
-       :pointer-events "all"}])
+   {:class "cellophane"
+    :id id
+    :cx x :cy y
+    :r size
+    :fill "none"
+    :pointer-events "all"}])
 
 (defn svg-vertex [[id [weight pos inflow]]]
   (let [free (- inflow weight)
@@ -86,6 +86,26 @@
      (vertex pos free size)
      (cellophane id pos size)]))
 
+(defn edit-button [x y width height]
+  [:svg:g
+   [:svg:rect
+    {:x x :y y
+     :width width :height height
+     :fill "green"}]
+   [:svg:text {:x (+ x (/ width 2))
+               :y (+ y 5 (/ height 2))
+               :fill "white"
+               :text-anchor "middle"}
+    "edit"]
+   [:svg:rect
+    {:class "cellophane"
+     :id "edit"
+     :x x :y y
+     :width width :height height
+     :stroke-width 1
+     :stroke "black"
+     :fill "none"
+     :pointer-events "all"}] ])
 
 
 (defn make-svg [[width height] edges vertices]
@@ -100,6 +120,9 @@
     {:id "workaround"
      :x 0 :y 0
      :width 1 :height 1}]
+
+   (edit-button 10 10 100 20)
+
 
    (map svg-edge edges)
    (map svg-vertex vertices)])

@@ -155,6 +155,7 @@
         named-vertices (update-in named-edges [:vertices] name-vertices)
         added-moving (merge named-vertices {:vertex-moving nil
                                             :moving false})]
+    (.log js/console "whatever")
     added-moving))
 
 
@@ -165,3 +166,4 @@
       :to-draw draw-world
       :on-click update-state))
   )
+
