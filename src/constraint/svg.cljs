@@ -86,12 +86,12 @@
      (vertex pos free size)
      (cellophane id pos size)]))
 
-(defn edit-button [x y width height]
+(defn edit-button [x y width height edit?]
   [:svg:g
    [:svg:rect
     {:x x :y y
      :width width :height height
-     :fill "green"}]
+     :fill (if edit? "green" "gray")}]
    [:svg:text {:x (+ x (/ width 2))
                :y (+ y 5 (/ height 2))
                :fill "white"
@@ -108,7 +108,7 @@
      :pointer-events "all"}] ])
 
 
-(defn make-svg [[width height] edges vertices]
+(defn make-svg [[width height] edges vertices edit?]
   [:svg:svg {:width width :height height}
    [:svg:defs
     triangle-marker-ok
@@ -121,7 +121,7 @@
      :x 0 :y 0
      :width 1 :height 1}]
 
-   (edit-button 10 10 100 20)
+   (edit-button 10 10 100 20 edit?)
 
 
    (map svg-edge edges)

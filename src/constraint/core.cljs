@@ -117,7 +117,8 @@
                   (crate/html [:div#forsvg
                                (make-svg (map-size world-state)
                                          (prepare-edges world-state)
-                                         (prepare-vertices world-state))])))
+                                         (prepare-vertices world-state)
+                                         (:edit world-state))])))
 
 
 
@@ -136,27 +137,42 @@
         (update-in [:moving] not))))
 
 
-(defn update-state [event world-state]
+(defn handle-editing [event world-state]
   (let [clicked-what (event->targetid event)
-        constrained-flip (partial flip-edge world-state)
-        is-edge? (re-matches #"edge.*" clicked-what)
         is-vertex? (re-matches #"vertex.*" clicked-what)]
     (cond
       (:moving world-state) (move-the-vertex world-state event)
-      is-edge? (update-in world-state [:edges clicked-what] constrained-flip)
       is-vertex? (merge world-state {:moving true
                                      :vertex-moving clicked-what})
       :else world-state)))
+
+
+(defn update-state [event world-state]
+  (let [clicked-what (event->targetid event)
+        constrained-flip (partial flip-edge world-state)
+        is-edit? (re-matches #"edit" clicked-what)
+        is-edge? (re-matches #"edge.*" clicked-what)
+        is-vertex? (re-matches #"vertex.*" clicked-what)]
+    (if (:edit world-state)
+      (if is-edit?
+        (merge world-state {:moving false
+                            :vertex-moving nil
+                            :edit false})
+        (handle-editing event world-state))
+      (cond
+        is-edit? (update-in world-state [:edit] not)
+        is-edge? (update-in world-state [:edges clicked-what] constrained-flip)
+        :else world-state))))
 
 
 (defn parse-state [state]
   (let [named-edges (update-in state [:edges]
                                (comp name-vertices-in-all-edges name-edges))
         named-vertices (update-in named-edges [:vertices] name-vertices)
-        added-moving (merge named-vertices {:vertex-moving nil
-                                            :moving false})]
-    (.log js/console "whatever")
-    added-moving))
+        added-edit (merge named-vertices {:edit false
+                                          :vertex-moving nil
+                                          :moving false})]
+    added-edit))
 
 
 (go
