@@ -1,6 +1,4 @@
-(ns constraint.svg
-  (:require
-    [clojure.string :as string]))
+(ns constraint.svg)
 
 
 (defn make-triangle-marker [id arrow]
@@ -33,10 +31,12 @@
 
 
 
-(defn make-line-dirs [from to]
-  (let [middle (map (comp #(/ % 2) +) from to)
-        coords (map (partial string/join ",") [from middle to])]
-    (string/join " " (map str ["M" "L" "L"] coords))))
+(defn make-line-dirs [[xfrom yfrom] [xto yto]]
+  (let [xmiddle (/ (+ xfrom xto) 2)
+        ymiddle (/ (+ yfrom yto) 2)]
+    (str "M" xfrom   "," yfrom    " "
+         "L" xto     "," yto      " "
+         "L" xmiddle "," ymiddle  " ")))
 
 
 
