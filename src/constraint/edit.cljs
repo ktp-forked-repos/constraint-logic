@@ -10,7 +10,7 @@
     (map - click-position rect-position)))
 
 
-(defn move-the-vertex [world-state event]
+(defn move-the-vertex [event world-state]
   (let [moving (:selected world-state)
         position-to-update [:vertices moving 1]
         where (where-svg-was-clicked event)]
@@ -62,14 +62,20 @@
       (toggle-vertex-size selected world-state)
       (add-or-delete-edge selected clicked-vertex world-state))))
 
+
+(defn handle-selected [clicked-what event world-state]
+  (let [clicked-vertex? (re-matches #"vertex.*" clicked-what)]
+    (if clicked-vertex?
+      (edit-vertex-or-connections clicked-what world-state)
+      (move-the-vertex event world-state))))
+
+
 (defn handle-editing [clicked-what event world-state]
-  (let [clicked-edge? (re-matches #"edge.*" clicked-what)
-        clicked-vertex? (re-matches #"vertex.*" clicked-what)]
+  (let [unselect #(merge % {:selected nil})
+        clicked-edge? (re-matches #"edge.*" clicked-what)
+        clicked-vertex? (re-matches #"vertex.*" clicked-what) ]
     (if (:selected world-state)
-      (merge (if clicked-vertex?
-               (edit-vertex-or-connections clicked-what world-state)
-               (move-the-vertex world-state event))
-        {:selected nil})
+      (unselect (handle-selected clicked-what event world-state))
       (cond
         clicked-edge? (update-in world-state [:edges clicked-what 2]
                                  #(if (= :blue %) :red :blue))
