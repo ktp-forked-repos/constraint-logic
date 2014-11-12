@@ -29,6 +29,7 @@
     ch))
 
 
+(def map-padding [50 50])
 
 
 (defn inflow [edges vertex]
@@ -73,7 +74,7 @@
        (vals)
        (map second)
        (apply map max)
-       (map + [50 50])))
+       (map + map-padding)))
 
 
 
@@ -95,7 +96,6 @@
   (for [[vertex-id _ :as all] vertices]
     (update-in all [1]
                (partial (flip conj) (inflow edges vertex-id)))))
-
 
 
 (defn draw-world [world-state]
