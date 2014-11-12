@@ -37,18 +37,17 @@
         connected? (comp connected-either-way? get-edge-ends)]
     (first (filter connected? edges))))
 
-(defn update-edges [world-state how]
-  (update-in world-state [:edges] how))
+(defn make-new-edge [from to world-state]
+  (let [next-to-largest-key (next-key (largest-key world-state))]
+    [next-to-largest-key [from to :red]])
+  )
 
 (defn add-or-delete-edge [from to world-state]
   (let [connected-id (first (first-connected-edge from to world-state))
-        next-to-largest-key (next-key (largest-key world-state))
-        new-edge [next-to-largest-key [from to :red]]
-        add-new-edge #(conj % new-edge)
-        delete-edge #(dissoc % connected-id)]
-    (if (nil? connected-id)
-      (update-edges world-state add-new-edge)
-      (update-edges world-state delete-edge))))
+        add-new-edge #(conj % (make-new-edge from to world-state))
+        delete-edge #(dissoc % connected-id)
+        add-or-delete (if (nil? connected-id) add-new-edge delete-edge)]
+    (update-in world-state [:edges] add-or-delete)))
 
 (defn edit-vertex-or-connections [clicked-vertex world-state]
   (let [selected (:selected world-state)]
