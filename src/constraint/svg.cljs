@@ -85,7 +85,8 @@
          (str free)]))
 
 (defn cellophane [id [x y] size]
-  "creates a clickable invisible circle, a layer above the vertex to handle problems with clicking on the internal text"
+  "creates a clickable invisible circle, a layer above the vertex to handle
+  problems with clicking on the internal text"
   [:svg:circle
    {:class "cellophane"
     :id id
