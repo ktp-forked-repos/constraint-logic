@@ -33,10 +33,10 @@
 
 
 (defn inflow [edges vertex]
-  (let [in-going (for [[_ [_ to color]] edges
-                       :when (= to vertex)]
-                   (color->value color))]
-    (apply + in-going)))
+  (let [incoming-values (for [[_ [_ to color]] edges
+                              :when (= to vertex)]
+                          (color->value color))]
+    (apply + incoming-values)))
 
 
 
@@ -93,9 +93,9 @@
 
 
 (defn prepare-vertices [{:keys [vertices edges]}]
-  (for [[vertex-id _ :as all] vertices]
-    (update-in all [1]
-               (partial (flip conj) (inflow edges vertex-id)))))
+  (for [[vertex-id vertex-data] vertices
+        :let [incoming-flow (inflow edges vertex-id)]]
+    `(~vertex-id ~@vertex-data ~incoming-flow)))
 
 
 (defn draw-world [world-state]

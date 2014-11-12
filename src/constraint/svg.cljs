@@ -113,7 +113,7 @@
    2 25})
 
 
-(defn svg-vertex [selected [id [weight pos inflow]]]
+(defn svg-vertex [selected [id weight pos inflow]]
   (let [free (- inflow weight)
         size (weight->size weight)
         selected? (= id selected)]
