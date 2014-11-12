@@ -164,11 +164,14 @@
                                           :selected nil})]
     added-edit))
 
+(defn reset-edit [state]
+  (merge state {:editing? false
+                :selected nil}))
 
 (go
   (let [read-state (reader/read-string (<! (GET "./state.edn")))]
     (big-bang!
-      :initial-state (parse-state read-state)
+      :initial-state (reset-edit read-state)
       :to-draw draw-world
       :on-click update-state))
   )
