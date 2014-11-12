@@ -19,7 +19,7 @@
 
 (def triangle-marker-ok
   (make-triangle-marker "TriangleOK"
-                        [:svg:path {:fill "white"
+                        [:svg:path {:fill "GreenYellow"
                                     :stroke "black"
                                     :d arrow-path}]))
 
@@ -27,7 +27,7 @@
 
 (def triangle-marker-not-ok
   (make-triangle-marker "TriangleNotOK"
-                        [:svg:path {:fill "black"
+                        [:svg:path {:fill "gray"
                                     :stroke "black"
                                     :d arrow-path}]))
 
@@ -40,19 +40,31 @@
 
 
 
-(defn svg-edge [[id [from to color flippable?]]]
-  [:svg:path
-   {:class "clickable"
-    :id id
-    :d (make-line-dirs from to)
-    :stroke (name color)
-    :stroke-width "10px"
-    :fill "none"
-    :marker-mid (if flippable?
-                  "url(#TriangleOK)"
-                  "url(#TriangleNotOK)")
-    :opacity 0.6
-    }])
+(defn svg-edge [[id [from to color flippable? player]]]
+  [:svg:g
+   {:class "edge"}
+   [:svg:path
+    {:class "value"
+     :id id
+     :d (make-line-dirs from to)
+     :stroke (name color)
+     :stroke-width "12px"
+     :fill "none"
+     :marker-mid (if flippable?
+                   "url(#TriangleOK)"
+                   "url(#TriangleNotOK)")
+     :opacity 0.6
+     }]
+   [:svg:path
+    {:class "player"
+     :id id
+     :d (make-line-dirs from to)
+     :stroke (cond (= 1 player) "white"
+                   (= 2 player) "black"
+                   :else "none")
+     :stroke-width "5px"
+     :fill "none"
+     :opacity 1}]])
 
 
 (defn vertex [[x y] free size selected?]
@@ -99,8 +111,8 @@
                :fill "white"
                :text-anchor "middle"}
     (if editing?
-      "play"
-      "edit")]
+      "go play"
+      "go edit")]
    [:svg:rect
     {:class "cellophane"
      :id "edit"

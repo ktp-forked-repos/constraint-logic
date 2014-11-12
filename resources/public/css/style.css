@@ -1,9 +1,9 @@
 body {
 	background: #E8E8E8;
 }
-path:hover {
+.edge:hover .value {
 	opacity: 1;
-	stroke-width: 16;
+	stroke-width: 18;
 }
 #edit:hover {
 	stroke-width: 4
