@@ -2,13 +2,18 @@
   (:require [constraint.common :refer [edge-id]]))
 
 
+(defn where-svg-was-clicked [event]
+  (let [svg-rect (.getBoundingClientRect (dommy.core/sel1 :svg))
+        click-position [(.-clientX event) (.-clientY event)]
+        rect-position [(.-left svg-rect) (.-top svg-rect)]]
+    (map - click-position rect-position)))
+
 
 (defn move-the-vertex [world-state event]
   (let [moving (:selected world-state)
-        rect (.getBoundingClientRect (dommy.core/sel1 :svg))
-        pos [(- (.-clientX event) (.-left rect))
-             (- (.-clientY event) (.-top rect))]]
-    (update-in world-state [:vertices moving 1] (constantly pos))))
+        position-to-update [:vertices moving 1]
+        where (where-svg-was-clicked event)]
+    (update-in world-state position-to-update (constantly where))))
 
 (defn get-key [edge-str]
   (->> edge-str
