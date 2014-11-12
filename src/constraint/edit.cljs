@@ -50,9 +50,11 @@
     (update-in world-state [:edges] add-or-delete)))
 
 (defn edit-vertex-or-connections [clicked-vertex world-state]
-  (let [selected (:selected world-state)]
+  (let [selected (:selected world-state)
+        swap-vertex-size #(inc (mod % 2))
+        selected-vertex-size [:vertices selected 0]]
     (if (= selected clicked-vertex)
-      (update-in world-state [:vertices selected 0] #(inc (mod % 2)))
+      (update-in world-state selected-vertex-size swap-vertex-size)
       (add-or-delete-edge selected clicked-vertex world-state)
       )))
 
