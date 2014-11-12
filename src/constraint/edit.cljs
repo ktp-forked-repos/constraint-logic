@@ -31,25 +31,30 @@
 (defn next-key [key-num]
   (str edge-id (inc key-num)))
 
-(defn get-connected-edges [from to {:keys [edges]}]
-  (let [both-ways #{[from to] [to from]}]
-    (filter #(both-ways (butlast (second %))) edges)))
+(defn first-connected-edge [from to {:keys [edges]}]
+  (let [connected-either-way? #{[from to] [to from]}
+        get-edge-ends (comp butlast second)
+        connected? (comp connected-either-way? get-edge-ends)]
+    (first (filter connected? edges))))
 
-(defn connect-or-disconnect [from to world-state]
-  (let [connected-id (first (first (get-connected-edges from to world-state)))
+(defn update-edges [world-state how]
+  (update-in world-state [:edges] how))
+
+(defn add-or-delete-edge [from to world-state]
+  (let [connected-id (first (first-connected-edge from to world-state))
         next-to-largest-key (next-key (largest-key world-state))
-        new-edge [next-to-largest-key [from to :red]]]
-    (update-in world-state
-               [:edges]
-               (if (nil? connected-id)
-                 #(conj % new-edge)
-                 #(dissoc % connected-id)))))
+        new-edge [next-to-largest-key [from to :red]]
+        add-new-edge #(conj % new-edge)
+        delete-edge #(dissoc % connected-id)]
+    (if (nil? connected-id)
+      (update-edges world-state add-new-edge)
+      (update-edges world-state delete-edge))))
 
 (defn edit-vertex-or-connections [clicked-vertex world-state]
   (let [selected (:selected world-state)]
     (if (= selected clicked-vertex)
       (update-in world-state [:vertices selected 0] #(inc (mod % 2)))
-      (connect-or-disconnect selected clicked-vertex world-state)
+      (add-or-delete-edge selected clicked-vertex world-state)
       )))
 
 (defn handle-editing [clicked-what event world-state]
