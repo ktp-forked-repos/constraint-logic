@@ -49,6 +49,7 @@
      :d (make-line-dirs from to)
      :stroke (name color)
      :stroke-width "12px"
+     :stroke-linecap "round"
      :fill "none"
      :marker-mid (if flippable?
                    "url(#TriangleOK)"
@@ -95,12 +96,32 @@
     :fill "none"
     :pointer-events "all"}])
 
+
+(defn zero [[x y] size selected?]
+  [:svg:circle
+   {:cx x
+    :cy y
+    :r size
+    :fill (if selected? "yellow" "none")
+    :stroke none
+    :pointer-events "all"}])
+
+
+(def weight->size
+  {0 20
+   1 15
+   2 25})
+
+
 (defn svg-vertex [selected [id [weight pos inflow]]]
   (let [free (- inflow weight)
-        size (+ 5 (* weight 10))
+        size (weight->size weight)
         selected? (= id selected)]
     [:svg:g
-     (vertex pos free size selected?)
+     (if (= 0 weight)
+       (zero pos size selected?)
+       (vertex pos free size selected?))
+
      (cellophane id pos size)]))
 
 (defn edit-button [x y width height editing?]
