@@ -4,6 +4,10 @@
   (:require
     [constraint.svg :refer [make-svg]]
     [constraint.edit :refer [handle-editing]]
+    [constraint.common :refer [vert-id
+                               str-vert-id
+                               edge-id
+                               color->value]]
     [dataview.loader :refer [fetch-text]]
     [clojure.string :as string]
     [dommy.core :as dommy]
@@ -26,8 +30,6 @@
 
 
 
-(def color->value {:red 1
-                   :blue 2})
 
 (defn inflow [edges vertex]
   (let [in-going (for [[_ [_ to color]] edges
@@ -43,9 +45,6 @@
       (.-target)
       (.-id)))
 
-(def vert-id "vertex")
-(def str-vert-id (partial str vert-id))
-(def edge-id "edge")
 
 (defn nameless->named-map [the-name coll]
   (let [ids (map (partial str the-name) (range))]

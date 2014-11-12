@@ -1,6 +1,7 @@
-(ns constraint.edit)
+(ns constraint.edit
+  (:require [constraint.common :refer [edge-id]]))
 
-(def edge-id "edge")
+
 
 (defn move-the-vertex [world-state event]
   (let [moving (:selected world-state)
