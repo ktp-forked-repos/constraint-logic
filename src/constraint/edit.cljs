@@ -49,14 +49,18 @@
         add-or-delete (if (nil? connected-id) add-new-edge delete-edge)]
     (update-in world-state [:edges] add-or-delete)))
 
-(defn edit-vertex-or-connections [clicked-vertex world-state]
-  (let [selected (:selected world-state)
-        swap-vertex-size #(inc (mod % 2))
+(defn toggle-vertex-size [selected world-state]
+  (let [toggle-between-sizes #(inc (mod % 2))
         selected-vertex-size [:vertices selected 0]]
+    (update-in world-state
+               selected-vertex-size
+               toggle-between-sizes)))
+
+(defn edit-vertex-or-connections [clicked-vertex world-state]
+  (let [selected (:selected world-state)]
     (if (= selected clicked-vertex)
-      (update-in world-state selected-vertex-size swap-vertex-size)
-      (add-or-delete-edge selected clicked-vertex world-state)
-      )))
+      (toggle-vertex-size selected world-state)
+      (add-or-delete-edge selected clicked-vertex world-state))))
 
 (defn handle-editing [clicked-what event world-state]
   (let [clicked-edge? (re-matches #"edge.*" clicked-what)
