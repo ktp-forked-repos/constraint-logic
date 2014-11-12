@@ -46,26 +46,10 @@
       (.-id)))
 
 
-(defn nameless->named-map [the-name coll]
-  (let [ids (map (partial str the-name) (range))]
-    (into {} (map vector ids coll))))
-
-(def name-edges
-  (partial nameless->named-map edge-id))
-
-(def name-vertices
-  (partial nameless->named-map vert-id))
-
-(defn name-vertices-in-one-edge [[start end color]]
-  [(str-vert-id start)
-   (str-vert-id end)
-   color])
 
 (defn fmap [f m]
   (into {} (for [[k v] m] [k (f v)])))
 
-(defn name-vertices-in-all-edges [edges]
-  (fmap name-vertices-in-one-edge edges))
 
 (defn ok-to-flip? [{:keys [vertices edges]} [_ to color]]
   (let [edge-value (color->value color)
@@ -80,6 +64,7 @@
    (locations end)
    color
    (ok-to-flip? world-state edge)])
+
 
 
 
@@ -155,14 +140,6 @@
         (handle-editing clicked-what event world-state))
       (handle-playing clicked-what world-state))))
 
-
-(defn parse-state [state]
-  (let [named-edges (update-in state [:edges]
-                               (comp name-vertices-in-all-edges name-edges))
-        named-vertices (update-in named-edges [:vertices] name-vertices)
-        added-edit (merge named-vertices {:editing? false
-                                          :selected nil})]
-    added-edit))
 
 (defn reset-edit [state]
   (merge state {:editing? false
