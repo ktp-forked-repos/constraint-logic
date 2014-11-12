@@ -1,6 +1,7 @@
 (ns constraint.edit
   (:require [constraint.common :refer [edge-id]]))
 
+(def edge-id-len (count edge-id))
 
 (defn where-svg-was-clicked [event]
   (let [svg-rect (.getBoundingClientRect (dommy.core/sel1 :svg))
@@ -17,7 +18,7 @@
 
 (defn get-key [edge-str]
   (->> edge-str
-       (drop 4)
+       (drop edge-id-len)
        (apply str)
        (js/parseInt)))
 
