@@ -34,9 +34,9 @@
 (defn make-line-dirs [[xfrom yfrom] [xto yto]]
   (let [xmiddle (/ (+ xfrom xto) 2)
         ymiddle (/ (+ yfrom yto) 2)]
-    (str "M" xfrom   "," yfrom    " "
-         "L" xto     "," yto      " "
-         "L" xmiddle "," ymiddle  " ")))
+    (str "M" xfrom   "," yfrom   " "
+         "L" xmiddle "," ymiddle " "
+         "L" xto     "," yto     " ")))
 
 
 
@@ -66,15 +66,17 @@
      :fill "none"
      :opacity 1}]])
 
+(defn vertex-fill-color [selected? free]
+  (cond
+    selected?  "yellow"
+    (> free 0) "white"
+    (= free 0) "gray"
+    :else      "red"))
 
 (defn vertex [[x y] free size selected?]
   (list [:svg:circle {:cx x :cy y
                       :r size
-                      :fill (cond
-                              selected?  "yellow"
-                              (> free 0) "white"
-                              (= free 0) "gray"
-                              :else      "red")
+                      :fill (vertex-fill-color selected? free)
                       :stroke "black"
                       :stroke-width 3}]
         [:svg:text {:x x :y (+ 5 y)
