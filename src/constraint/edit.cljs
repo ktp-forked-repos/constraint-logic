@@ -1,5 +1,6 @@
 (ns constraint.edit
-  (:require [constraint.common :refer [edge-id]]))
+  (:require [constraint.common :refer [edge-id
+                                       vert-id]]))
 
 (def edge-id-len (count edge-id))
 
@@ -62,22 +63,33 @@
       (toggle-vertex-size selected world-state)
       (add-or-delete-edge selected clicked-vertex world-state))))
 
+(def vertex-regex (re-pattern (str vert-id ".*")))
+(def edge-regex (re-pattern (str edge-id ".*")))
 
 (defn handle-selected [clicked-what event world-state]
-  (let [clicked-vertex? (re-matches #"vertex.*" clicked-what)]
+  (let [clicked-vertex? (re-matches vertex-regex clicked-what)]
     (if clicked-vertex?
       (edit-vertex-or-connections clicked-what world-state)
       (move-the-vertex event world-state))))
 
+(defn select-vertex [world-state clicked-vertex]
+  (merge world-state {:selected clicked-vertex}))
+
+(defn toggle-edge-value [world-state clicked-edge]
+  (let [clicked-edge-color [:edges clicked-edge 2]
+        toggle-color {:red :blue :blue :red}]
+    (update-in world-state clicked-edge-color toggle-color)))
+
+(defn handle-unslected [clicked-what world-state]
+  (let [clicked-edge? (re-matches edge-regex clicked-what)
+        clicked-vertex? (re-matches vertex-regex clicked-what)]
+    (cond
+        clicked-edge? (toggle-edge-value world-state clicked-what)
+        clicked-vertex? (select-vertex world-state clicked-what)
+        :else world-state)))
 
 (defn handle-editing [clicked-what event world-state]
-  (let [unselect #(merge % {:selected nil})
-        clicked-edge? (re-matches #"edge.*" clicked-what)
-        clicked-vertex? (re-matches #"vertex.*" clicked-what) ]
+  (let [unselect #(merge % {:selected nil})]
     (if (:selected world-state)
       (unselect (handle-selected clicked-what event world-state))
-      (cond
-        clicked-edge? (update-in world-state [:edges clicked-what 2]
-                                 #(if (= :blue %) :red :blue))
-        clicked-vertex? (merge world-state {:selected clicked-what})
-        :else world-state))))
+      (handle-unslected clicked-what world-state))))
