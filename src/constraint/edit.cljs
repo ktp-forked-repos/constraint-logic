@@ -119,8 +119,9 @@
 
 (defn add-vertex [event world-state]
   (let [where (where-svg-was-clicked event)
-        new-vertex (make-new-vertex where world-state)]
-    (update-in world-state [:vertices] #(conj % new-vertex))))
+        new-vertex (make-new-vertex where world-state)
+        add-the-new #(conj % new-vertex)]
+    (update-in world-state [:vertices] add-the-new)))
 
 
 
