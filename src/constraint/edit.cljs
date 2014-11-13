@@ -163,14 +163,31 @@
     (update-in world-state [:vertices] add-the-new)))
 
 
+(defn is-ctrl+click? [event]
+  (-> event
+      (js->clj)
+      (.-ctrlKey)))
+
+
+(defn cycle-player-no-nils [p]
+  (mod (inc p) 3))
+
+(def cycle-player (fnil cycle-player-no-nils 0))
+
+(defn cycle-edge-player [world-state clicked-what]
+  (let [selected-edge-player [:edges clicked-what 3]]
+    (update-in world-state selected-edge-player cycle-player)))
+
 
 (defn handle-unslected [clicked-what event world-state]
   (let [clicked-edge? (re-matches edge-regex clicked-what)
-        clicked-vertex? (re-matches vertex-regex clicked-what)]
+        clicked-vertex? (re-matches vertex-regex clicked-what)
+        rightclicked-edge? (and clicked-edge? (is-ctrl+click? event))]
     (cond
-        clicked-edge? (toggle-edge-value world-state clicked-what)
-        clicked-vertex? (select-vertex world-state clicked-what)
-        :else (add-vertex event world-state))))
+      rightclicked-edge? (cycle-edge-player world-state clicked-what)
+      clicked-edge? (toggle-edge-value world-state clicked-what)
+      clicked-vertex? (select-vertex world-state clicked-what)
+      :else (add-vertex event world-state))))
 
 
 
