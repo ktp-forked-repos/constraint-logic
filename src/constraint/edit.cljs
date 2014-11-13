@@ -74,19 +74,19 @@
 
 
 
-(defn toggle-vertex-size [selected world-state]
-  (let [toggle-between-sizes #(inc (mod % 2))
+(defn cycle-vertex-size [selected world-state]
+  (let [cycle-between-sizes #(mod (inc %) 3)
         selected-vertex-size [:vertices selected 0]]
     (update-in world-state
                selected-vertex-size
-               toggle-between-sizes)))
+               cycle-between-sizes)))
 
 
 
 (defn edit-vertex-or-connections [clicked-vertex world-state]
   (let [selected (:selected world-state)]
     (if (= selected clicked-vertex)
-      (toggle-vertex-size selected world-state)
+      (cycle-vertex-size selected world-state)
       (add-or-delete-edge selected clicked-vertex world-state))))
 
 
