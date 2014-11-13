@@ -97,13 +97,13 @@
     :pointer-events "all"}])
 
 
-(defn zero [[x y] size selected?]
+(defn zero [[x y] size selected? editing?]
   [:svg:circle
    {:cx x
     :cy y
     :r size
     :fill (if selected? "yellow" "none")
-    :stroke "none"
+    :stroke (if editing? "black" "none")
     :pointer-events "all"}])
 
 
@@ -113,13 +113,13 @@
    2 25})
 
 
-(defn svg-vertex [selected [id weight pos inflow]]
+(defn svg-vertex [selected editing? [id [weight pos inflow]]]
   (let [free (- inflow weight)
         size (weight->size weight)
         selected? (= id selected)]
     [:svg:g
      (if (= 0 weight)
-       (zero pos size selected?)
+       (zero pos size selected? editing?)
        (vertex pos free size selected?))
 
      (cellophane id pos size)]))
@@ -148,6 +148,32 @@
      :pointer-events "all"}] ])
 
 
+(defn make-delete-path-str [x y]
+  (str "M" x        "," y " "
+       "L" (+ x 10) "," y " "
+       "L" (+ x 10) "," (+ y 10) " "
+       "L" x        "," (+ y 10) " "
+       "Z"
+       "M" x        "," y " "
+       "L" (+ x 10) "," (+ y 10) " "
+       "M" (+ x 10) "," y " "
+       "L" x        "," (+ y 10)
+       ))
+
+
+
+
+(defn add-delete [vertices selected]
+  (let [[weight [x y]] (vertices selected)
+        move (+ 10 (weight->size weight))]
+    [:svg:path
+     {:id selected
+      :d (make-delete-path-str (+ x move) (- y move))
+      :fill "red"
+      :stroke "black"
+      :stroke-width 2}]))
+
+
 (defn make-svg [[width height] edges vertices editing? selected]
   [:svg:svg {:width width :height height}
    [:svg:defs
@@ -165,4 +191,7 @@
 
 
    (map svg-edge edges)
-   (map (partial svg-vertex selected) vertices)])
+   (map (partial svg-vertex selected editing?) vertices)
+   (if (and editing? selected)
+     (add-delete vertices selected)
+     )])

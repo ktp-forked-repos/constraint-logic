@@ -93,9 +93,9 @@
 
 
 (defn prepare-vertices [{:keys [vertices edges]}]
-  (for [[vertex-id vertex-data] vertices
-        :let [incoming-flow (inflow edges vertex-id)]]
-    `(~vertex-id ~@vertex-data ~incoming-flow)))
+  (into {} (for [[vertex-id vertex-data] vertices
+                 :let [incoming-flow (inflow edges vertex-id)]]
+             [vertex-id (conj vertex-data incoming-flow)])))
 
 
 (defn print-state [world-state]
