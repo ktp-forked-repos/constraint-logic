@@ -103,7 +103,7 @@
     :cy y
     :r size
     :fill (if selected? "yellow" "none")
-    :stroke none
+    :stroke "none"
     :pointer-events "all"}])
 
 
