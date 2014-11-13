@@ -95,11 +95,10 @@
 
 
 (defn event->class [e]
-  (-> e
-      (js->clj)
-      (.-target)
-      (.-className)
-      (.-baseVal)))
+  (.item (-> e
+             (js->clj)
+             (.-target)
+             (.-classList)) 0))
 
 (defn is-connected? [vertex [_ [from to _]]]
   (or (= vertex from)
