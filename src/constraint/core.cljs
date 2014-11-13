@@ -98,11 +98,14 @@
     `(~vertex-id ~@vertex-data ~incoming-flow)))
 
 
+(defn print-state [world-state]
+  (let [textarea (dommy.core/sel1 :#data)
+        newlined-state (string/replace (str world-state) #", " ",\n")]
+    (dommy/set-text! textarea newlined-state)))
+
+
 (defn draw-world [world-state]
-  (dommy/set-text! (dommy.core/sel1 :#data)
-                              (string/replace (str world-state)
-                                              #", "
-                                              ", \n"))
+  (print-state world-state)
   (dommy/replace! (dommy.core/sel1 :#forsvg)
                   (crate/html [:div#forsvg
                                (make-svg (map-size world-state)
@@ -117,15 +120,20 @@
     [to from color]
     edge))
 
+(defn toggle-editing [world-state]
+  (update-in world-state [:editing?] not))
+
+(defn flip-update-edge [clicked-what world-state]
+  (let [clicked-edge [:edges clicked-what]
+        flip-it (partial flip-edge world-state)]
+    (update-in world-state clicked-edge flip-it)))
 
 (defn handle-playing [clicked-what world-state]
   (let [clicked-edit? (re-matches #"edit" clicked-what)
         clicked-edge? (re-matches #"edge.*" clicked-what)]
     (cond
-      clicked-edit? (update-in world-state [:editing?] not)
-      clicked-edge? (update-in world-state
-                               [:edges clicked-what]
-                               (partial flip-edge world-state))
+      clicked-edit? (toggle-editing world-state)
+      clicked-edge? (flip-update-edge clicked-what world-state)
       :else world-state)))
 
 
