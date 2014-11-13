@@ -59,11 +59,12 @@
 
 
 
-(defn prepare-edge [locations world-state [start end color :as edge]]
+(defn prepare-edge [locations world-state [start end color player :as edge]]
   [(locations start)
    (locations end)
    color
-   (ok-to-flip? world-state edge)])
+   (ok-to-flip? world-state edge)
+   player])
 
 
 
@@ -114,9 +115,9 @@
                                          (:selected world-state))])))
 
 
-(defn flip-edge [world-state [from to color :as edge]]
+(defn flip-edge [world-state [from to color player :as edge]]
   (if (ok-to-flip? world-state edge)
-    [to from color]
+    [to from color player]
     edge))
 
 (defn toggle-editing [world-state]
