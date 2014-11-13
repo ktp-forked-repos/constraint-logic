@@ -53,7 +53,7 @@
 
 (defn get-vertex-connections [from to {:keys [edges]}]
   (let [connected-either-way? #{[from to] [to from]}
-        get-edge-ends (comp butlast second)
+        get-edge-ends (comp (partial take 2) second)
         connected? (comp connected-either-way? get-edge-ends)]
     (filter connected? edges)))
 
