@@ -182,9 +182,12 @@
 (defn handle-unslected [clicked-what event world-state]
   (let [clicked-edge? (re-matches edge-regex clicked-what)
         clicked-vertex? (re-matches vertex-regex clicked-what)
-        rightclicked-edge? (and clicked-edge? (is-ctrl+click? event))]
+        ctrl? (is-ctrl+click? event)
+        ctrl+clicked-edge? (and ctrl? clicked-edge?)
+        ctrl+clicked-vertex? (and ctrl? clicked-vertex?)]
     (cond
-      rightclicked-edge? (cycle-edge-player world-state clicked-what)
+      ctrl+clicked-edge? (cycle-edge-player world-state clicked-what)
+      ctrl+clicked-vertex? (delete-vertex clicked-what world-state)
       clicked-edge? (toggle-edge-value world-state clicked-what)
       clicked-vertex? (select-vertex world-state clicked-what)
       :else (add-vertex event world-state))))
