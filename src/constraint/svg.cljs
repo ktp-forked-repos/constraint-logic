@@ -157,7 +157,7 @@
         by (+ ty D)]
     (str "M" tx " " ty
          "L" bx " " ty
-         "L" by " " by
+         "L" bx " " by
          "L" tx " " by
          "Z"
          "M" tx " " ty
@@ -172,7 +172,8 @@
   (let [[weight [x y]] (vertices selected)
         move (+ 10 (weight->size weight))]
     [:svg:path
-     {:id selected
+     {:class "delete"
+      :id selected
       :d (make-delete-path-str (+ x move) (- y move))
       :fill "red"
       :stroke "black"

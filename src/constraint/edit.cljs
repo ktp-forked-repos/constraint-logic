@@ -51,11 +51,11 @@
 
 
 
-(defn first-connected-edge [from to {:keys [edges]}]
+(defn get-vertex-connections [from to {:keys [edges]}]
   (let [connected-either-way? #{[from to] [to from]}
         get-edge-ends (comp butlast second)
         connected? (comp connected-either-way? get-edge-ends)]
-    (first (filter connected? edges))))
+    (filter connected? edges)))
 
 
 
@@ -64,12 +64,15 @@
     [new-key [from to :red]]))
 
 
+(def first-connection-id
+  (comp first first get-vertex-connections))
+
 
 (defn add-or-delete-edge [from to world-state]
-  (let [connected-id (first (first-connected-edge from to world-state))
+  (let [connection-id (first-connection-id from to world-state)
         add-new-edge #(conj % (make-new-edge from to world-state))
-        delete-edge #(dissoc % connected-id)
-        add-or-delete (if (nil? connected-id) add-new-edge delete-edge)]
+        delete-edge #(dissoc % connection-id)
+        add-or-delete (if (nil? connection-id) add-new-edge delete-edge)]
     (update-in world-state [:edges] add-or-delete)))
 
 
@@ -91,11 +94,47 @@
 
 
 
+(defn event->class [e]
+  (-> e
+      (js->clj)
+      (.-target)
+      (.-className)
+      (.-baseVal)))
+
+(defn is-connected? [vertex [_ [from to _]]]
+  (or (= vertex from)
+      (= vertex to)))
+
+(defn all-edge-ids-connected-to [vertex world-state]
+  (let [edges (:edges world-state)
+        connected-edges (filter (partial is-connected? vertex) edges)]
+    (map first connected-edges)))
+
+
+(defn dissoc-edge [world-state edge-id]
+  (update-in world-state [:edges] #(dissoc % edge-id)))
+
+
+(defn delete-all-connected [id world-state]
+  (reduce
+    dissoc-edge
+    world-state
+    (all-edge-ids-connected-to id world-state)))
+
+(defn delete-vertex [id world-state]
+  (let [deleted-edges (delete-all-connected id world-state)]
+    (update-in deleted-edges
+               [:vertices]
+               #(dissoc % id))))
+
+
 (defn handle-selected [clicked-what event world-state]
-  (let [clicked-vertex? (re-matches vertex-regex clicked-what)]
-    (if clicked-vertex?
-      (edit-vertex-or-connections clicked-what world-state)
-      (move-the-vertex event world-state))))
+  (let [clicked-vertex? (re-matches vertex-regex clicked-what)
+        clicked-delete? (= "delete" (event->class event))]
+    (cond
+      clicked-delete? (delete-vertex clicked-what world-state )
+      clicked-vertex? (edit-vertex-or-connections clicked-what world-state)
+      :else (move-the-vertex event world-state))))
 
 
 
