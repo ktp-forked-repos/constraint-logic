@@ -149,16 +149,21 @@
 
 
 (defn make-delete-path-str [x y]
-  (str "M" x        "," y " "
-       "L" (+ x 10) "," y " "
-       "L" (+ x 10) "," (+ y 10) " "
-       "L" x        "," (+ y 10) " "
-       "Z"
-       "M" x        "," y " "
-       "L" (+ x 10) "," (+ y 10) " "
-       "M" (+ x 10) "," y " "
-       "L" x        "," (+ y 10)
-       ))
+  (let [d 8
+        D (* 2 d)
+        tx (- x d)
+        ty (- y d)
+        bx (+ tx D)
+        by (+ ty D)]
+    (str "M" tx " " ty
+         "L" bx " " ty
+         "L" by " " by
+         "L" tx " " by
+         "Z"
+         "M" tx " " ty
+         "L" bx " " by
+         "M" bx " " ty
+         "L" tx " " by)))
 
 
 
