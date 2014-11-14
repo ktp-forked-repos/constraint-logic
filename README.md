@@ -1,14 +1,14 @@
-# constraint
+# constraint logic
 
-A Clojure library designed to ... well, that part is up to you.
+Draw and play constraint logic graphs.
 
 ## Usage
 
-FIXME
+```lein cljsbuild once release``` or ```lein figwheel dev```
+
 
 ## License
 
-Copyright © 2014 FIXME
+Copyright © 2014 Marek Rogalski
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+Distributed under the MIT license.
