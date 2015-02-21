@@ -118,8 +118,8 @@
 
 
 (defn svg-vertex [selected editing? [id [weight pos inflow]]]
-  (let [free (- inflow weight)
-        size (weight->size weight)
+  (let [free      (- inflow weight)
+        size      (weight->size weight)
         selected? (= id selected)]
     [:svg:g
      (if (= 0 weight)
@@ -174,7 +174,7 @@
 
 (defn add-delete [vertices selected]
   (let [[weight [x y]] (vertices selected)
-        move (+ 10 (weight->size weight))]
+        move           (+ 10 (weight->size weight))]
     [:svg:path
      {:class "delete"
       :id selected

@@ -17,8 +17,8 @@
 
 
 (defn ok-to-flip? [{:keys [vertices edges]} [_ to color]]
-  (let [edge-value (color->value color)
-        to-inflow (inflow edges to)
+  (let [edge-value      (color->value color)
+        to-inflow       (inflow edges to)
         to-vertex-value (first (vertices to))]
     (>= (- to-inflow edge-value) to-vertex-value)))
 

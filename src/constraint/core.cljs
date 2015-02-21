@@ -45,7 +45,7 @@
 
 
 (defn print-state [world-state]
-  (let [textarea (dommy.core/sel1 :#data)
+  (let [textarea       (dommy.core/sel1 :#data)
         newlined-state (string/replace (str world-state) #", " ",\n")]
     (dommy/set-text! textarea newlined-state)))
 
@@ -68,7 +68,7 @@
 
 (defn flip-update-edge [clicked-what world-state]
   (let [clicked-edge [:edges clicked-what]
-        flip-it (partial flip-edge world-state)]
+        flip-it      (partial flip-edge world-state)]
     (update-in world-state clicked-edge flip-it)))
 
 (defn handle-playing [clicked-what world-state]
@@ -77,13 +77,13 @@
     (cond
       clicked-edit? (toggle-editing world-state)
       clicked-edge? (flip-update-edge clicked-what world-state)
-      :else world-state)))
+      :else         world-state)))
 
 
 (defn update-state [event world-state]
-  (let [clicked-what (event->targetid event)
+  (let [clicked-what  (event->targetid event)
         clicked-edit? (re-matches #"edit" clicked-what)
-        is-vertex? (re-matches #"vertex.*" clicked-what)]
+        is-vertex?    (re-matches #"vertex.*" clicked-what)]
     (if (:editing? world-state)
       (if clicked-edit?
         (merge world-state {:selected nil
