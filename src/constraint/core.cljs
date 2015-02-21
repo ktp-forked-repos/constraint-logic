@@ -100,21 +100,26 @@
 
 (def ticker (atom interval))
 
+(defn get-legal-moves
+  [world-state]
+  (filter
+   #(ok-to-flip? world-state (second %))
+   (world-state :edges)))
+
+(defn get-random-legal-move-name
+  [world-state]
+  (first (rand-nth (get-legal-moves world-state)))
+
 (defn random-move 
   [_ world-state]
   (swap! ticker dec)
   (if (neg? @ticker)
     (do 
       (reset! ticker interval)
-      (let [a (first  (rand-nth
-                       (filter
-                        #(ok-to-flip? world-state (second %))
-                        (world-state :edges))))]
-        (.log js/console a)
-        (flip-update-edge a world-state)))
-    world-state
-    )
-  )
+      (let [random-move-name (get-random-legal-move-name world-state)]
+        (flip-update-edge random-move-name world-state)))
+    world-state))
+
 
 (go
   (let [read-state (reader/read-string (<! (GET "./state.edn")))]
