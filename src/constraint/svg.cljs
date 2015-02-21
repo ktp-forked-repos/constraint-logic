@@ -1,4 +1,8 @@
-(ns constraint.svg)
+(ns constraint.svg
+  (:require
+   [constraint.common :refer [map-size
+                              prepare-edges
+                              prepare-vertices]]))
 
 
 (defn make-triangle-marker [id arrow]
@@ -180,7 +184,8 @@
       :stroke-width 2}]))
 
 
-(defn make-svg [[width height] edges vertices editing? selected]
+(defn make-prepared-svg
+  [[width height] edges vertices editing? selected]
   [:svg:svg {:width width :height height}
    [:svg:defs
     triangle-marker-ok
@@ -201,3 +206,13 @@
    (if (and editing? selected)
      (add-delete vertices selected)
      )])
+
+(defn make-svg
+  [world-state]
+  (make-prepared-svg
+   (map-size world-state)
+   (prepare-edges world-state)
+   (prepare-vertices world-state)
+   (:editing? world-state)
+   (:selected world-state)
+   ))
