@@ -153,11 +153,32 @@
   (merge state {:editing? false
                 :selected nil}))
 
+(def interval 20)
+
+(def ticker (atom interval))
+
+(defn random-move 
+  [_ world-state]
+  (swap! ticker dec)
+  (if (neg? @ticker)
+    (do 
+      (reset! ticker interval)
+      (let [a (first  (rand-nth
+                       (filter
+                        #(ok-to-flip? world-state (second %))
+                        (world-state :edges))))]
+        (.log js/console a)
+        (flip-update-edge a world-state)))
+    world-state
+    )
+  )
+
 (go
   (let [read-state (reader/read-string (<! (GET "./state.edn")))]
     (big-bang!
       :initial-state (reset-edit read-state)
       :to-draw draw-world
+      :on-tick random-move 
       :on-click update-state))
   )
 
