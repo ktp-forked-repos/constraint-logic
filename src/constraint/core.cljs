@@ -152,11 +152,25 @@
   (dommy/listen! (dommy.core/sel1 :#randomrange) :change
                  change-interval))
 
+(defn remember-initial-state
+  [world-state]
+  (merge world-state {:initial world-state}))
+
+
+(defn parse-state
+  [state]
+  (->>
+   state
+   reader/read-string
+   reset-edit
+   reset-random
+   remember-initial-state))
+
 (go
   (listen-on-slider-change)
-  (let [read-state (reader/read-string (<! (GET "./state.edn")))]
+  (let [read-state (parse-state (<! (GET "./state.edn")))]
     (big-bang!
-      :initial-state (->> read-state reset-edit reset-random)
+      :initial-state read-state 
       :to-draw draw-world
       :on-tick random-move
       :on-click update-state)))
