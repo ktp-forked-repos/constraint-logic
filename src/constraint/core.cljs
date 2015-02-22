@@ -96,6 +96,10 @@
   (merge state {:editing? false
                 :selected nil}))
 
+(defn reset-random
+  [state]
+  (merge state {:random false}))
+
 (def interval 20)
 
 (def ticker (atom interval))
@@ -108,24 +112,30 @@
 
 (defn get-random-legal-move-name
   [world-state]
-  (first (rand-nth (get-legal-moves world-state)))
+  (->> world-state
+       get-legal-moves
+       rand-nth
+       first))
 
 (defn random-move 
   [_ world-state]
-  (swap! ticker dec)
-  (if (neg? @ticker)
+  (if (:random world-state)
     (do 
-      (reset! ticker interval)
-      (let [random-move-name (get-random-legal-move-name world-state)]
-        (flip-update-edge random-move-name world-state)))
+      (swap! ticker dec)
+      (if (neg? @ticker)
+        (do 
+          (reset! ticker interval)
+          (let [random-move-name (get-random-legal-move-name world-state)]
+            (flip-update-edge random-move-name world-state)))
+        world-state))
     world-state))
+
 
 
 (go
   (let [read-state (reader/read-string (<! (GET "./state.edn")))]
     (big-bang!
-      :initial-state (reset-edit read-state)
+      :initial-state (->> read-state reset-edit reset-random)
       :to-draw draw-world
       :on-tick random-move
-      :on-click update-state))
-  )
+      :on-click update-state)))
