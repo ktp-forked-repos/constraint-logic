@@ -12,3 +12,12 @@ body {
 #auto:hover {
 	stroke-width: 4
 }
+
+#randomrange {
+    width: 200px;
+}
+
+#visibility {
+    background-color: white;
+    width: 206px;
+}
