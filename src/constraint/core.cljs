@@ -102,9 +102,9 @@
   [state]
   (merge state {:random false}))
 
-(def interval 10)
+(def interval (atom 10))
 
-(def ticker (atom interval))
+(def ticker (atom @interval))
 
 (defn get-legal-moves
   [world-state]
@@ -125,7 +125,7 @@
   (swap! ticker dec)
   (if (neg? @ticker)
     (do 
-      (reset! ticker interval)
+      (reset! ticker @interval)
       (-> world-state
           get-random-legal-move-name
           (flip-update-edge world-state)))
@@ -139,7 +139,21 @@
     world-state))
 
 
+(defn change-interval
+  []
+  (->> (dommy.core/sel1 :#randomrange)
+       .-value
+       js/parseInt
+       (- 61)
+       (reset! interval)))
+
+(defn listen-on-slider-change
+  []
+  (dommy/listen! (dommy.core/sel1 :#randomrange) :change
+                 change-interval))
+
 (go
+  (listen-on-slider-change)
   (let [read-state (reader/read-string (<! (GET "./state.edn")))]
     (big-bang!
       :initial-state (->> read-state reset-edit reset-random)
