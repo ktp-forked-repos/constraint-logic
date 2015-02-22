@@ -63,7 +63,17 @@
     [to from color player]
     edge))
 
+(defn edit-button
+  [{:keys [editing?]}]
+  (crate/html [:button {:id "edit"}
+               (if-not editing?
+                 "go play"
+                 "go edit")]))
+
 (defn toggle-editing [world-state]
+  (dommy/replace!
+   (dommy.core/sel1 :#edit)
+   (edit-button world-state))
   (update-in world-state [:editing?] not))
 
 (defn flip-update-edge [clicked-what world-state]
@@ -71,13 +81,28 @@
         flip-it      (partial flip-edge world-state)]
     (update-in world-state clicked-edge flip-it)))
 
+
+(defn random-button
+  [{:keys [random?]}]
+  (crate/html [:button {:id "auto"}
+               (if-not random?
+                 "go manual"
+                 "go auto")]))
+
+(defn toggle-random
+  [world-state]
+  (dommy/replace!
+   (dommy.core/sel1 :#auto)
+   (random-button world-state))
+  (update-in world-state [:random?] not))
+
 (defn handle-playing [clicked-what world-state]
   (let [clicked-edit? (re-matches #"edit" clicked-what)
         clicked-auto? (re-matches #"auto" clicked-what)
         clicked-edge? (re-matches #"edge.*" clicked-what)]
     (cond
       clicked-edit? (toggle-editing world-state)
-      clicked-auto? (update-in world-state [:random?] not)
+      clicked-auto? (toggle-random world-state)
       clicked-edge? (flip-update-edge clicked-what world-state)
       :else         world-state)))
 
@@ -88,8 +113,7 @@
         is-vertex?    (re-matches #"vertex.*" clicked-what)]
     (if (:editing? world-state)
       (if clicked-edit?
-        (merge world-state {:selected nil
-                            :editing? false})
+        (merge (toggle-editing world-state) {:selected nil})
         (handle-editing clicked-what event world-state))
       (handle-playing clicked-what world-state))))
 

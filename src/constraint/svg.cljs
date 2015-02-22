@@ -129,53 +129,6 @@
 
      (cellophane id pos size)]))
 
-(defn auto-button [x y width height random?]
-  [:svg:g
-   [:svg:rect
-    {:x x :y y
-     :width width :height height
-     :fill (if random? "orange" "red")}]
-   [:svg:text {:x (+ x (/ width 2))
-               :y (+ y 5 (/ height 2))
-               :fill "white"
-               :text-anchor "middle"}
-    (if random?
-      "go manual"
-      "go auto")]
-   [:svg:rect
-    {:class "cellophane"
-     :id "auto"
-     :x x :y y
-     :width width :height height
-     :stroke-width 1
-     :stroke "black"
-     :fill "none"
-     :pointer-events "all"}] ])
-
-
-(defn edit-button [x y width height editing?]
-  [:svg:g
-   [:svg:rect
-    {:x x :y y
-     :width width :height height
-     :fill (if editing? "green" "blue")}]
-   [:svg:text {:x (+ x (/ width 2))
-               :y (+ y 5 (/ height 2))
-               :fill "white"
-               :text-anchor "middle"}
-    (if editing?
-      "go play"
-      "go edit")]
-   [:svg:rect
-    {:class "cellophane"
-     :id "edit"
-     :x x :y y
-     :width width :height height
-     :stroke-width 1
-     :stroke "black"
-     :fill "none"
-     :pointer-events "all"}] ])
-
 
 (defn make-delete-path-str [x y]
   (let [d 8
@@ -242,10 +195,7 @@
     triangle-marker-ok
     triangle-marker-not-ok]
 
-   workaround
-
-   (edit-button 10 10 100 20 editing?)
-   (auto-button 110 10 100 20 random?)]
+   workaround]
   )
 
 (defn make-svg
