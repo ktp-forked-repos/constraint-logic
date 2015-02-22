@@ -150,8 +150,9 @@
 
 (defn get-random-legal-move-name
   [world-state]
-  (->> world-state
+  (some->> world-state
        get-legal-moves
+       seq
        rand-nth
        first))
 
@@ -162,9 +163,9 @@
   (if (neg? @ticker)
     (do 
       (reset! ticker @interval)
-      (-> world-state
-          get-random-legal-move-name
-          (flip-update-edge world-state)))
+      (if-let [m (get-random-legal-move-name world-state)]
+        (flip-update-edge m world-state)
+        (:initial world-state)))
     world-state))
 
 
