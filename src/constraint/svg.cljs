@@ -242,6 +242,6 @@
   (let [head  (make-svg-head
                (map-size world-state)
                (:editing? world-state)
-               (:random world-state))
+               (:random? world-state))
         graph (make-svg-graph world-state)]
     (conj head graph)))

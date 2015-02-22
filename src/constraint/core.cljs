@@ -77,7 +77,7 @@
         clicked-edge? (re-matches #"edge.*" clicked-what)]
     (cond
       clicked-edit? (toggle-editing world-state)
-      clicked-auto? (update-in world-state [:random] not)
+      clicked-auto? (update-in world-state [:random?] not)
       clicked-edge? (flip-update-edge clicked-what world-state)
       :else         world-state)))
 
@@ -100,7 +100,7 @@
 
 (defn reset-random
   [state]
-  (merge state {:random false}))
+  (merge state {:random? false}))
 
 (def interval (atom 10))
 
@@ -134,7 +134,7 @@
 
 (defn random-move 
   [_ world-state]
-  (if (:random world-state)
+  (if (:random? world-state)
     (move-randomly world-state)
     world-state))
 
@@ -144,7 +144,7 @@
   (->> (dommy.core/sel1 :#randomrange)
        .-value
        js/parseInt
-       (- 61)
+       (- 60)
        (reset! interval)))
 
 (defn listen-on-slider-change
