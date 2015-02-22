@@ -98,7 +98,7 @@
 
 (defn reset-random
   [state]
-  (merge state {:random false}))
+  (merge state {:random true}))
 
 (def interval 20)
 
@@ -117,19 +117,24 @@
        rand-nth
        first))
 
+
+(defn move-randomly
+  [world-state]
+  (swap! ticker dec)
+  (if (neg? @ticker)
+    (do 
+      (reset! ticker interval)
+      (-> world-state
+          get-random-legal-move-name
+          (flip-update-edge world-state)))
+    world-state))
+
+
 (defn random-move 
   [_ world-state]
   (if (:random world-state)
-    (do 
-      (swap! ticker dec)
-      (if (neg? @ticker)
-        (do 
-          (reset! ticker interval)
-          (let [random-move-name (get-random-legal-move-name world-state)]
-            (flip-update-edge random-move-name world-state)))
-        world-state))
+    (move-randomly world-state)
     world-state))
-
 
 
 (go
