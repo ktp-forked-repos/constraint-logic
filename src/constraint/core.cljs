@@ -63,18 +63,21 @@
     [to from color player]
     edge))
 
-(defn edit-button
-  [{:keys [editing?]}]
-  (crate/html [:button {:id "edit"}
-               (if-not editing?
-                 "go play"
-                 "go edit")]))
+
+(defn reset-edit [state]
+  (merge state {:editing? false
+                :selected nil}))
+
 
 (defn toggle-editing [world-state]
-  (dommy/replace!
-   (dommy.core/sel1 :#edit)
-   (edit-button world-state))
-  (update-in world-state [:editing?] not))
+  (dommy/set-text! (dommy.core/sel1 :#edit)
+                   (if-not (:editing? world-state)
+                     "go play"
+                     "go edit"))
+  (if-not (:editing? world-state)
+    (update-in world-state [:editing?] not)
+    (reset-edit world-state)))
+
 
 (defn flip-update-edge [clicked-what world-state]
   (let [clicked-edge [:edges clicked-what]
@@ -82,45 +85,43 @@
     (update-in world-state clicked-edge flip-it)))
 
 
-(defn random-button
-  [{:keys [random?]}]
-  (crate/html [:button {:id "auto"}
-               (if-not random?
-                 "go manual"
-                 "go auto")]))
-
 (defn toggle-random
   [world-state]
-  (dommy/replace!
-   (dommy.core/sel1 :#auto)
-   (random-button world-state))
+  (dommy/set-text! (dommy.core/sel1 :#auto)
+                   (if-not (:random? world-state)
+                     "go manual"
+                     "go auto"))
   (update-in world-state [:random?] not))
 
 (defn handle-playing [clicked-what world-state]
-  (let [clicked-edit? (re-matches #"edit" clicked-what)
-        clicked-auto? (re-matches #"auto" clicked-what)
-        clicked-edge? (re-matches #"edge.*" clicked-what)]
-    (cond
-      clicked-edit? (toggle-editing world-state)
-      clicked-auto? (toggle-random world-state)
-      clicked-edge? (flip-update-edge clicked-what world-state)
-      :else         world-state)))
+  (let [clicked-edge? (re-matches #"edge.*" clicked-what)]
+    (if clicked-edge?
+      (flip-update-edge clicked-what world-state)
+      world-state)))
+
+
+(defn handle-button-click
+  [event world-state]
+  (let [clicked-what  (event->targetid event)
+        clicked-edit? (re-matches #"edit" clicked-what)
+        clicked-auto? (re-matches #"auto" clicked-what)]
+      (cond
+        clicked-edit? (toggle-editing world-state)
+        clicked-auto? (toggle-random world-state)
+        :else         world-state)))
 
 
 (defn update-state [event world-state]
-  (let [clicked-what  (event->targetid event)
-        clicked-edit? (re-matches #"edit" clicked-what)
-        is-vertex?    (re-matches #"vertex.*" clicked-what)]
-    (if (:editing? world-state)
-      (if clicked-edit?
-        (merge (toggle-editing world-state) {:selected nil})
-        (handle-editing clicked-what event world-state))
-      (handle-playing clicked-what world-state))))
+  (let [clicked-buton? (re-matches #"(?i)button" (.-nodeName  (.-target  event)))
+        clicked-what   (event->targetid event)
+        is-vertex?     (re-matches #"vertex.*" clicked-what)]
+    (if clicked-buton?
+      (handle-button-click event world-state)
+      (if (:editing? world-state)
+        (handle-editing clicked-what event world-state)
+        (handle-playing clicked-what world-state)))))
 
 
-(defn reset-edit [state]
-  (merge state {:editing? false
-                :selected nil}))
 
 (defn reset-random
   [state]
