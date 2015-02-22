@@ -101,9 +101,8 @@
 
 
 (defn handle-button-click
-  [event world-state]
-  (let [clicked-what  (event->targetid event)
-        clicked-edit? (re-matches #"edit" clicked-what)
+  [clicked-what world-state]
+  (let [clicked-edit? (re-matches #"edit" clicked-what)
         clicked-auto? (re-matches #"auto" clicked-what)]
       (cond
         clicked-edit? (toggle-editing world-state)
@@ -111,12 +110,18 @@
         :else         world-state)))
 
 
+(defn clicked-button?
+  [event]
+  (->> event
+       .-target
+       .-nodeName
+       (re-matches #"(?i)button")))
+
+
 (defn update-state [event world-state]
-  (let [clicked-buton? (re-matches #"(?i)button" (.-nodeName  (.-target  event)))
-        clicked-what   (event->targetid event)
-        is-vertex?     (re-matches #"vertex.*" clicked-what)]
-    (if clicked-buton?
-      (handle-button-click event world-state)
+  (let [clicked-what (event->targetid event)]
+    (if (clicked-button? event)
+      (handle-button-click clicked-what world-state)
       (if (:editing? world-state)
         (handle-editing clicked-what event world-state)
         (handle-playing clicked-what world-state)))))
