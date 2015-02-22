@@ -208,8 +208,19 @@
       :stroke-width 2}]))
 
 
-(defn make-prepared-svg
-  [[width height] edges vertices editing? selected random?]
+(defn make-svg-graph
+  [{:keys [editing? selected] :as world-state}]
+  (let [edges           (prepare-edges world-state)
+        vertices        (prepare-vertices world-state)
+        make-svg-vertex (partial svg-vertex selected editing?)]
+    (list (map svg-edge edges)
+          (map make-svg-vertex vertices)
+          (if (and editing? selected)
+            (add-delete vertices selected)))))
+
+
+(defn make-svg-head
+  [[width height] editing? random?]
   [:svg:svg {:width width :height height}
    [:svg:defs
     triangle-marker-ok
@@ -223,22 +234,14 @@
      :width 1 :height 1}]
 
    (edit-button 10 10 100 20 editing?)
-   (auto-button 110 10 100 20 random?)
-
-
-   (map svg-edge edges)
-   (map (partial svg-vertex selected editing?) vertices)
-   (if (and editing? selected)
-     (add-delete vertices selected)
-     )])
+   (auto-button 110 10 100 20 random?)]
+  )
 
 (defn make-svg
   [world-state]
-  (make-prepared-svg
-   (map-size world-state)
-   (prepare-edges world-state)
-   (prepare-vertices world-state)
-   (:editing? world-state)
-   (:selected world-state)
-   (:random world-state)
-   ))
+  (let [head  (make-svg-head
+               (map-size world-state)
+               (:editing? world-state)
+               (:random world-state))
+        graph (make-svg-graph world-state)]
+    (conj head graph)))
