@@ -89,9 +89,10 @@
                     :text-anchor "middle"}
          (str free)]))
 
-(defn cellophane [id [x y] size]
+(defn cellophane 
   "creates a clickable invisible circle, a layer above the vertex to handle
   problems with clicking on the internal text"
+  [id [x y] size]
   [:svg:circle
    {:class "cellophane"
     :id id
@@ -218,20 +219,30 @@
           (if (and editing? selected)
             (add-delete vertices selected)))))
 
+(defn svg-size-property
+  "returns {:width width :height height}"
+  [world-state]
+  (->> world-state
+       map-size
+       (interleave [:width :height])
+       (apply hash-map)))
+
+; this is a workaround for firefoxes resizing of getBoundingClientRect when
+; moving the svg elements
+(def workaround
+  [:svg:rect
+    {:id "workaround"
+     :x 0 :y 0
+     :width 1 :height 1}])
 
 (defn make-svg-head
-  [[width height] editing? random?]
-  [:svg:svg {:width width :height height}
+  [{:keys [editing? random?] :as world-state}]
+  [:svg:svg (svg-size-property world-state)
    [:svg:defs
     triangle-marker-ok
     triangle-marker-not-ok]
 
-   ; this is a workaround for firefoxes resizing of getBoundingClientRect when
-   ; moving the svg elements
-   [:svg:rect
-    {:id "workaround"
-     :x 0 :y 0
-     :width 1 :height 1}]
+   workaround
 
    (edit-button 10 10 100 20 editing?)
    (auto-button 110 10 100 20 random?)]
@@ -239,9 +250,6 @@
 
 (defn make-svg
   [world-state]
-  (let [head  (make-svg-head
-               (map-size world-state)
-               (:editing? world-state)
-               (:random? world-state))
+  (let [head  (make-svg-head world-state)
         graph (make-svg-graph world-state)]
     (conj head graph)))
