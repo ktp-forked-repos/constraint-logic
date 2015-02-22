@@ -44,7 +44,7 @@
 
 
 
-(defn svg-edge [[id [from to color flippable? player]]]
+(defn svg-edge [[id [from to color flippable? player flips]]]
   [:svg:g
    {:class "edge"}
    [:svg:path

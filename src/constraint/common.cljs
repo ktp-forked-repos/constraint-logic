@@ -24,12 +24,13 @@
 
 
 
-(defn prepare-edge [locations world-state [start end color player :as edge]]
+(defn prepare-edge [locations world-state [start end color player flips :as edge]]
   [(locations start)
    (locations end)
    color
    (ok-to-flip? world-state edge)
-   player])
+   player
+   flips])
 
 
 (defn fmap [f m]

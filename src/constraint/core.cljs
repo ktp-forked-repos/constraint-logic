@@ -58,9 +58,10 @@
     (dommy/replace! old-svg new-svg)))
 
 
-(defn flip-edge [world-state [from to color player :as edge]]
-  (if (ok-to-flip? world-state edge)
-    [to from color player]
+(defn flip-edge [world-state [from to color player flips :as edge]]
+  (if (and  (ok-to-flip? world-state edge)
+            (pos? flips))
+    [to from color player (dec flips)]
     edge))
 
 
