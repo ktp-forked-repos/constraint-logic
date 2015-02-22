@@ -154,7 +154,8 @@
 
 (defn remember-initial-state
   [world-state]
-  (merge world-state {:initial world-state}))
+  (merge world-state
+         {:initial (dissoc world-state :initial)}))
 
 
 (defn parse-state
