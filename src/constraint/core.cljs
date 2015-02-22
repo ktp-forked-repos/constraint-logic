@@ -68,12 +68,18 @@
   (merge state {:editing? false
                 :selected nil}))
 
+(defn toggle-button-text
+  [buttid condition valid invalid]
+  (dommy/set-text! (dommy.core/sel1 buttid)
+                   (if-not condition
+                     valid
+                     invalid)))
 
 (defn toggle-editing [world-state]
-  (dommy/set-text! (dommy.core/sel1 :#edit)
-                   (if-not (:editing? world-state)
-                     "go play"
-                     "go edit"))
+  (toggle-button-text :#edit
+                      (:editing? world-state)
+                      "go play"
+                      "go edit")
   (if-not (:editing? world-state)
     (update-in world-state [:editing?] not)
     (reset-edit world-state)))
@@ -87,10 +93,10 @@
 
 (defn toggle-random
   [world-state]
-  (dommy/set-text! (dommy.core/sel1 :#auto)
-                   (if-not (:random? world-state)
-                     "go manual"
-                     "go auto"))
+  (toggle-button-text :#auto
+                      (:random? world-state)
+                      "go manual"
+                      "go auto")
   (update-in world-state [:random?] not))
 
 (defn handle-playing [clicked-what world-state]
