@@ -73,9 +73,11 @@
 
 (defn handle-playing [clicked-what world-state]
   (let [clicked-edit? (re-matches #"edit" clicked-what)
+        clicked-auto? (re-matches #"auto" clicked-what)
         clicked-edge? (re-matches #"edge.*" clicked-what)]
     (cond
       clicked-edit? (toggle-editing world-state)
+      clicked-auto? (update-in world-state [:random] not)
       clicked-edge? (flip-update-edge clicked-what world-state)
       :else         world-state)))
 
@@ -98,9 +100,9 @@
 
 (defn reset-random
   [state]
-  (merge state {:random true}))
+  (merge state {:random false}))
 
-(def interval 20)
+(def interval 10)
 
 (def ticker (atom interval))
 

@@ -128,6 +128,30 @@
 
      (cellophane id pos size)]))
 
+(defn auto-button [x y width height random?]
+  [:svg:g
+   [:svg:rect
+    {:x x :y y
+     :width width :height height
+     :fill (if random? "orange" "red")}]
+   [:svg:text {:x (+ x (/ width 2))
+               :y (+ y 5 (/ height 2))
+               :fill "white"
+               :text-anchor "middle"}
+    (if random?
+      "go manual"
+      "go auto")]
+   [:svg:rect
+    {:class "cellophane"
+     :id "auto"
+     :x x :y y
+     :width width :height height
+     :stroke-width 1
+     :stroke "black"
+     :fill "none"
+     :pointer-events "all"}] ])
+
+
 (defn edit-button [x y width height editing?]
   [:svg:g
    [:svg:rect
@@ -185,7 +209,7 @@
 
 
 (defn make-prepared-svg
-  [[width height] edges vertices editing? selected]
+  [[width height] edges vertices editing? selected random?]
   [:svg:svg {:width width :height height}
    [:svg:defs
     triangle-marker-ok
@@ -199,6 +223,7 @@
      :width 1 :height 1}]
 
    (edit-button 10 10 100 20 editing?)
+   (auto-button 110 10 100 20 random?)
 
 
    (map svg-edge edges)
@@ -215,4 +240,5 @@
    (prepare-vertices world-state)
    (:editing? world-state)
    (:selected world-state)
+   (:random world-state)
    ))
