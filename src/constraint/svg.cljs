@@ -25,6 +25,11 @@
                                     :stroke "black"
                                     :d arrow-path}]))
 
+(def triangle-marker-dead
+  (make-triangle-marker "TriangleDead"
+                        [:svg:path {:fill "black"
+                                    :stroke "black"
+                                    :d arrow-path}]))
 
 
 (def triangle-marker-not-ok
@@ -55,9 +60,11 @@
      :stroke-width "12px"
      :stroke-linecap "round"
      :fill "none"
-     :marker-mid (if flippable?
-                   "url(#TriangleOK)"
-                   "url(#TriangleNotOK)")
+     :marker-mid (if (pos? flips)
+                   (if flippable?
+                     "url(#TriangleOK)"
+                     "url(#TriangleNotOK)")
+                   "url(#TriangleDead)")
      :opacity 0.6
      }]
    [:svg:path
@@ -193,6 +200,7 @@
   [:svg:svg (svg-size-property world-state)
    [:svg:defs
     triangle-marker-ok
+    triangle-marker-dead
     triangle-marker-not-ok]
 
    workaround]

@@ -143,10 +143,16 @@
 
 (def ticker (atom @interval))
 
+(defn is-legal?
+  [world-state move]
+  (and
+   (ok-to-flip? world-state (second move))
+   (pos? (last (second move)))))
+
 (defn get-legal-moves
   [world-state]
   (filter
-   #(ok-to-flip? world-state (second %))
+   (partial is-legal? world-state)
    (world-state :edges)))
 
 (defn get-random-legal-move-name
@@ -166,7 +172,9 @@
       (reset! ticker @interval)
       (if-let [m (get-random-legal-move-name world-state)]
         (flip-update-edge m world-state)
-        (:initial world-state)))
+        (merge (:initial world-state)
+               {:random? true}
+               {:initial (:initial world-state)})))
     world-state))
 
 
