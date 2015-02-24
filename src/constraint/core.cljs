@@ -80,7 +80,10 @@
   [world-state]
   (merge world-state
          {:stats {:runs 0,
-                  :success 0}}))
+                  :success 0},
+          :length 0,
+          :lengths {:failure [],
+                    :success []}}))
 
 
 (defn toggle-button-text
@@ -131,11 +134,13 @@
 
 
 (defn reset-to-initial
-  [world-state]
-  (merge (:initial world-state)
-         {:stats (:stats world-state)}
-         {:random? (:random? world-state)}
-         {:initial (:initial world-state)}))
+  [{:keys [initial length lengths stats random?]}]
+  (merge initial
+         {:lengths lengths,
+          :length length
+          :stats stats,
+          :random? random?,
+          :initial initial}))
 
 
 (defn handle-button-click
@@ -219,18 +224,24 @@
    vals
    (some true?)))
 
+
+
 (defn successful-run
   [world-state]
   (let [inc-stats (partial merge-with + {:runs 1, :success 1})]
     (-> world-state
         reset-to-initial
-        (update-in [:stats] inc-stats))))
+        (update-in [:stats] inc-stats)
+        (update-in [:lengths :success] conj (:length world-state))
+        (assoc-in [:length] 0))))
 
 
 (defn unsuccessful-run
   [world-state]
   (-> world-state
       reset-to-initial
+      (update-in [:lengths :failure] conj (:length world-state))
+      (assoc-in [:length] 0)
       (update-in [:stats :runs] inc)))
 
 (defn move-randomly
@@ -242,7 +253,8 @@
       (if (any-target-flipped? world-state)
         (successful-run world-state)
         (if-let [m (get-random-legal-move-name world-state)]
-          (flip-update-edge m world-state)
+          (flip-update-edge m
+                            (update-in world-state [:length] inc))
           (unsuccessful-run world-state))))
     world-state))
 
