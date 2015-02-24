@@ -131,18 +131,14 @@
 
 (defn handle-button-click
   [clicked-what world-state]
-  (let [clicked-edit?  (re-matches #"edit" clicked-what)
-        clicked-auto?  (re-matches #"auto" clicked-what)
-        clicked-save?  (re-matches #"save" clicked-what)
-        clicked-reset? (re-matches #"manualreset" clicked-what)
-        clicked-flips? (re-matches #"flips" clicked-what)]
-      (cond
-        clicked-edit?  (toggle-editing world-state)
-        clicked-auto?  (toggle-random world-state)
-        clicked-flips? (toggle-flips world-state)
-        clicked-reset? (reset-to-initial world-state)
-        clicked-save?  (remember-initial-state world-state)
-        :else          world-state)))
+  (let [what-to-do (condp re-matches clicked-what
+                     #"edit"        toggle-editing
+                     #"auto"        toggle-random
+                     #"save"        remember-initial-state
+                     #"manualreset" reset-to-initial
+                     #"flips"       toggle-flips
+                     identity)]
+    (what-to-do world-state)))
 
 
 (defn clicked-button?
