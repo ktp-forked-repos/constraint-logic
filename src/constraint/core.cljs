@@ -236,20 +236,25 @@
 (defn make-a-map-for-graph
   [s]
   (mapv #(let [c (if (pos? %1) "blue" "red")]
-           {"color" c "x" (- %2) "y" %1 }) (take-last 100 s) (reverse (range (count s)))))
+           {"color" c "x" %2 "y" %1 }) (take-last 100 s) (range)))
+
+(defn graph
+  [world-state]
+  (js/z (clj->js [{"key"    "Series #1",
+                   "values" (make-a-map-for-graph (:lengths world-state))
+                   "color"  "#0000ff"}]))
+  world-state)
+
 
 (defn successful-run
   [world-state]
-  (js/z  (clj->js [{"key" "Series #1",
-                    "values"
-                    (make-a-map-for-graph (:lengths world-state))
-                    "color" "#0000ff"}]))
   (let [inc-stats (partial merge-with + {:runs 1, :success 1})]
     (-> world-state
         reset-to-initial
         (update-in [:stats] inc-stats)
         (update-in [:lengths] conj (:length world-state))
-        (assoc-in [:length] 0))))
+        (assoc-in [:length] 0)
+        graph)))
 
 
 (defn unsuccessful-run
@@ -258,7 +263,8 @@
       reset-to-initial
       (update-in [:lengths] conj (- (:length world-state)))
       (assoc-in [:length] 0)
-      (update-in [:stats :runs] inc)))
+      (update-in [:stats :runs] inc)
+      graph))
 
 (defn move-randomly
   [world-state]
