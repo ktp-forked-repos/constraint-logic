@@ -75,6 +75,14 @@
   (merge state {:editing? false
                 :selected nil}))
 
+
+(defn reset-stats
+  [world-state]
+  (merge world-state
+         {:stats {:runs 0,
+                  :success 0}}))
+
+
 (defn toggle-button-text
   [buttid condition valid invalid]
   (dommy/set-text! (dommy.core/sel1 buttid)
@@ -125,6 +133,7 @@
 (defn reset-to-initial
   [world-state]
   (merge (:initial world-state)
+         {:stats (:stats world-state)}
          {:random? (:random? world-state)}
          {:initial (:initial world-state)}))
 
@@ -201,20 +210,30 @@
          (:edges world-state))))
 
 
+(defn any-target-flipped?
+  [world-state]
+  (->>
+   [(:initial world-state) world-state]
+   (map get-target-edges)
+   (apply merge-with not=)
+   vals
+   (some true?)))
+
+
 (defn move-randomly
   [world-state]
   (swap! ticker dec)
   (if (neg? @ticker)
     (do 
       (reset! ticker @interval)
-      (let [old     (get-target-edges (:initial world-state))
-            current (get-target-edges world-state)]
-        (if (some true? (vals (merge-with not= old current)))
-          (reset-to-initial world-state)
-          (if-let [m (get-random-legal-move-name world-state)]
-            (flip-update-edge m world-state)
-            (reset-to-initial world-state)
-            ))))
+      (if (any-target-flipped? world-state)
+        (update-in (reset-to-initial world-state)
+                   [:stats] (partial  merge-with + {:runs 1, :success 1}))
+        (if-let [m (get-random-legal-move-name world-state)]
+          (flip-update-edge m world-state)
+          (update-in (reset-to-initial world-state)
+                     [:stats :runs] inc)
+          )))
     world-state))
 
 
@@ -257,8 +276,9 @@
    reader/read-string
    reset-edit
    reset-random
-   remember-initial-state
-   make-flips-matter))
+   make-flips-matter
+   reset-stats
+   remember-initial-state))
 
 (go
   (listen-on-slider-change)
