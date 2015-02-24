@@ -61,7 +61,7 @@
 
 (defn make-new-edge [from to {:keys [edges]}]
   (let [new-key (next-key edge-id edges)]
-    [new-key [from to :red]]))
+    [new-key [from to :red 0 1]]))
 
 
 (def first-connection-id
@@ -144,7 +144,7 @@
 
 (defn toggle-edge-value [world-state clicked-edge]
   (let [clicked-edge-color [:edges clicked-edge 2]
-        toggle-color {:red :blue :blue :red}]
+        toggle-color {:red :blue, :blue :green, :green :red}]
     (update-in world-state clicked-edge-color toggle-color)))
 
 

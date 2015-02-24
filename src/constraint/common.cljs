@@ -5,7 +5,8 @@
 (def edge-id  "edge")
 
 (def color->value {:red 1
-                   :blue 2})
+                   :blue 2
+                   :green 1})
 
 (def map-padding [50 50])
 
