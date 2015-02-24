@@ -48,8 +48,20 @@
          "L" xto     "," yto     " ")))
 
 
+(defn what-marker
+  [flips-matter? flips flippable?]
+  (let [ok-or-not-ok (if flippable?
+                       "url(#TriangleOK)"
+                       "url(#TriangleNotOK)")]
+    (if flips-matter?
+      (if (pos? flips)
+        ok-or-not-ok
+        "url(#TriangleDead)")
+      ok-or-not-ok)))
 
-(defn svg-edge [[id [from to color flippable? player flips]]]
+
+(defn svg-edge
+  [flips-matter? [id [from to color flippable? player flips]]]
   [:svg:g
    {:class "edge"}
    [:svg:path
@@ -60,11 +72,7 @@
      :stroke-width "12px"
      :stroke-linecap "round"
      :fill "none"
-     :marker-mid (if (pos? flips)
-                   (if flippable?
-                     "url(#TriangleOK)"
-                     "url(#TriangleNotOK)")
-                   "url(#TriangleDead)")
+     :marker-mid (what-marker flips-matter? flips flippable?)
      :opacity 0.6
      }]
    [:svg:path
@@ -170,11 +178,12 @@
 
 
 (defn make-svg-graph
-  [{:keys [editing? selected] :as world-state}]
+  [{:keys [editing? selected flips-matter?] :as world-state}]
   (let [edges           (prepare-edges world-state)
         vertices        (prepare-vertices world-state)
+        make-svg-edge   (partial svg-edge flips-matter?)
         make-svg-vertex (partial svg-vertex selected editing?)]
-    (list (map svg-edge edges)
+    (list (map make-svg-edge edges)
           (map make-svg-vertex vertices)
           (if (and editing? selected)
             (add-delete vertices selected)))))

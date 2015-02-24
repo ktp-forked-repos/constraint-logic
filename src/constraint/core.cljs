@@ -59,8 +59,7 @@
 
 
 (defn flip-edge [world-state [from to color player flips :as edge]]
-  (if (and  (ok-to-flip? world-state edge)
-            (pos? flips))
+  (if (is-legal? world-state edge)
     [to from color player (dec flips)]
     edge))
 
@@ -145,9 +144,12 @@
 
 (defn is-legal?
   [world-state move]
-  (and
-   (ok-to-flip? world-state (second move))
-   (pos? (last (second move)))))
+  (if (:flips-matter? world-state)
+    (and
+     (ok-to-flip? world-state (second move))
+     (pos? (last (second move))))
+    (ok-to-flip? world-state (second move)))) 
+
 
 (defn get-legal-moves
   [world-state]
@@ -204,6 +206,12 @@
          {:initial (dissoc world-state :initial)}))
 
 
+(defn make-flips-matter
+  [world-state]
+  (merge world-state
+         {:flips-matter? false}))
+
+
 (defn parse-state
   [state]
   (->>
@@ -211,7 +219,8 @@
    reader/read-string
    reset-edit
    reset-random
-   remember-initial-state))
+   remember-initial-state
+   make-flips-matter))
 
 (go
   (listen-on-slider-change)
