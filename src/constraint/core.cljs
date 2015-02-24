@@ -191,16 +191,30 @@
        rand-nth
        first))
 
+(defn get-target-edges
+  [world-state]
+  (into {}
+        (filter
+         (comp #{:green}
+               #(nth % 2)
+               second)
+         (:edges world-state))))
+
+
 (defn move-randomly
   [world-state]
   (swap! ticker dec)
   (if (neg? @ticker)
     (do 
       (reset! ticker @interval)
-      (if-let [m (get-random-legal-move-name world-state)]
-        (flip-update-edge m world-state)
-        (reset-to-initial world-state)
-        ))
+      (let [old     (get-target-edges (:initial world-state))
+            current (get-target-edges world-state)]
+        (if (some true? (vals (merge-with not= old current)))
+          (reset-to-initial world-state)
+          (if-let [m (get-random-legal-move-name world-state)]
+            (flip-update-edge m world-state)
+            (reset-to-initial world-state)
+            ))))
     world-state))
 
 
