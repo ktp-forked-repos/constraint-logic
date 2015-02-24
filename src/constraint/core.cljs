@@ -240,7 +240,8 @@
 
 (defn graph
   [world-state]
-  (js/z (clj->js [{"key"    "Series #1",
+  (js/z (clj->js (str (:stats world-state)))
+   (clj->js [{"key"    "Series #1",
                    "values" (make-a-map-for-graph (:lengths world-state))
                    "color"  "#0000ff"}]))
   world-state)
