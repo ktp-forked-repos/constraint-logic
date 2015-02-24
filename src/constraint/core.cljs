@@ -99,6 +99,15 @@
                       "go auto")
   (update-in world-state [:random?] not))
 
+
+(defn toggle-flips
+  [world-state]
+  (toggle-button-text :#flips
+                      (:flips-matter? world-state)
+                      "flips matter"
+                      "flips do not matter")
+  (update-in world-state [:flips-matter?] not))
+
 (defn handle-playing [clicked-what world-state]
   (let [clicked-edge? (re-matches #"edge.*" clicked-what)]
     (if clicked-edge?
@@ -108,12 +117,14 @@
 
 (defn handle-button-click
   [clicked-what world-state]
-  (let [clicked-edit? (re-matches #"edit" clicked-what)
-        clicked-auto? (re-matches #"auto" clicked-what)]
+  (let [clicked-edit?  (re-matches #"edit" clicked-what)
+        clicked-auto?  (re-matches #"auto" clicked-what)
+        clicked-flips? (re-matches #"flips" clicked-what)]
       (cond
-        clicked-edit? (toggle-editing world-state)
-        clicked-auto? (toggle-random world-state)
-        :else         world-state)))
+        clicked-edit?  (toggle-editing world-state)
+        clicked-auto?  (toggle-random world-state)
+        clicked-flips? (toggle-flips world-state)
+        :else          world-state)))
 
 
 (defn clicked-button?
@@ -144,17 +155,18 @@
 
 (defn is-legal?
   [world-state move]
-  (if (:flips-matter? world-state)
-    (and
-     (ok-to-flip? world-state (second move))
-     (pos? (last (second move))))
-    (ok-to-flip? world-state (second move)))) 
+  (and
+   (ok-to-flip? world-state move)
+   (if (:flips-matter? world-state)
+     (pos? (last move))
+     true)
+   )) 
 
 
 (defn get-legal-moves
   [world-state]
   (filter
-   (partial is-legal? world-state)
+   (comp (partial is-legal? world-state) second)
    (world-state :edges)))
 
 (defn get-random-legal-move-name
@@ -209,7 +221,7 @@
 (defn make-flips-matter
   [world-state]
   (merge world-state
-         {:flips-matter? false}))
+         {:flips-matter? true}))
 
 
 (defn parse-state
