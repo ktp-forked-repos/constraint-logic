@@ -8,7 +8,7 @@
 
 
 (defn where-svg-was-clicked [event]
-  (let [svg-rect (.getBoundingClientRect (dommy.core/sel1 :svg))
+  (let [svg-rect (.getBoundingClientRect (dommy.core/sel1 :#forsvg))
         click-position [(.-clientX event) (.-clientY event)]
         rect-position [(.-left svg-rect) (.-top svg-rect)]]
     (map - click-position rect-position)))

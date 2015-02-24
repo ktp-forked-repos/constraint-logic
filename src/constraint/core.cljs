@@ -65,6 +65,15 @@
     flips))
 
 
+(defn is-legal?
+  [world-state move]
+  (and
+   (ok-to-flip? world-state move)
+   (if (:flips-matter? world-state)
+     (pos? (last move))
+     true)
+   )) 
+
 (defn flip-edge [world-state [from to color player flips :as edge]]
   (if (is-legal? world-state edge)
     [to from color player (dec-if-matters (:flips-matter? world-state) flips)]
@@ -82,8 +91,7 @@
          {:stats {:runs 0,
                   :success 0},
           :length 0,
-          :lengths {:failure [],
-                    :success []}}))
+          :lengths []}))
 
 
 (defn toggle-button-text
@@ -143,6 +151,14 @@
           :initial initial}))
 
 
+
+(defn remember-initial-state
+  [world-state]
+  (merge world-state
+         {:initial (dissoc world-state :initial)}))
+
+
+
 (defn handle-button-click
   [clicked-what world-state]
   (let [what-to-do (condp re-matches clicked-what
@@ -181,14 +197,6 @@
 
 (def ticker (atom @interval))
 
-(defn is-legal?
-  [world-state move]
-  (and
-   (ok-to-flip? world-state move)
-   (if (:flips-matter? world-state)
-     (pos? (last move))
-     true)
-   )) 
 
 
 (defn get-legal-moves
@@ -225,14 +233,22 @@
    (some true?)))
 
 
+(defn make-a-map-for-graph
+  [s]
+  (mapv #(let [c (if (pos? %1) "blue" "red")]
+           {"color" c "x" (- %2) "y" %1 }) (take-last 100 s) (reverse (range (count s)))))
 
 (defn successful-run
   [world-state]
+  (js/z  (clj->js [{"key" "Series #1",
+                    "values"
+                    (make-a-map-for-graph (:lengths world-state))
+                    "color" "#0000ff"}]))
   (let [inc-stats (partial merge-with + {:runs 1, :success 1})]
     (-> world-state
         reset-to-initial
         (update-in [:stats] inc-stats)
-        (update-in [:lengths :success] conj (:length world-state))
+        (update-in [:lengths] conj (:length world-state))
         (assoc-in [:length] 0))))
 
 
@@ -240,7 +256,7 @@
   [world-state]
   (-> world-state
       reset-to-initial
-      (update-in [:lengths :failure] conj (:length world-state))
+      (update-in [:lengths] conj (- (:length world-state)))
       (assoc-in [:length] 0)
       (update-in [:stats :runs] inc)))
 
@@ -265,6 +281,15 @@
     (move-randomly world-state)
     world-state))
 
+;; (defn random-nonsense
+;;   [size]
+;;   (mapv #(let [y (- 50 (rand-int 100))
+;;                 c (if (pos? y) "blue" "red")]
+;;             {"color" c "x" %1 "y" y }) (range size) ))
+
+;;   (js/z  (clj->js [{"key" "Series #1",
+;;                     "values" (random-nonsense (rand-int 20))
+;;                     "color" "#0000ff"}]))
 
 (defn change-interval
   []
@@ -279,10 +304,6 @@
   (dommy/listen! (dommy.core/sel1 :#randomrange) :change
                  change-interval))
 
-(defn remember-initial-state
-  [world-state]
-  (merge world-state
-         {:initial (dissoc world-state :initial)}))
 
 
 (defn make-flips-matter
