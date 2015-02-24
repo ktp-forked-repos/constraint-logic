@@ -58,9 +58,16 @@
     (dommy/replace! old-svg new-svg)))
 
 
+(defn dec-if-matters
+  [flips-matter? flips]
+  (if flips-matter?
+    (dec flips)
+    flips))
+
+
 (defn flip-edge [world-state [from to color player flips :as edge]]
   (if (is-legal? world-state edge)
-    [to from color player (dec flips)]
+    [to from color player (dec-if-matters (:flips-matter? world-state) flips)]
     edge))
 
 
@@ -104,8 +111,8 @@
   [world-state]
   (toggle-button-text :#flips
                       (:flips-matter? world-state)
-                      "flips matter"
-                      "flips do not matter")
+                      "make number of flips not matter"
+                      "make number of flips matter")
   (update-in world-state [:flips-matter?] not))
 
 (defn handle-playing [clicked-what world-state]
@@ -115,15 +122,26 @@
       world-state)))
 
 
+(defn reset-to-initial
+  [world-state]
+  (merge (:initial world-state)
+         {:random? (:random? world-state)}
+         {:initial (:initial world-state)}))
+
+
 (defn handle-button-click
   [clicked-what world-state]
   (let [clicked-edit?  (re-matches #"edit" clicked-what)
         clicked-auto?  (re-matches #"auto" clicked-what)
+        clicked-save?  (re-matches #"save" clicked-what)
+        clicked-reset? (re-matches #"manualreset" clicked-what)
         clicked-flips? (re-matches #"flips" clicked-what)]
       (cond
         clicked-edit?  (toggle-editing world-state)
         clicked-auto?  (toggle-random world-state)
         clicked-flips? (toggle-flips world-state)
+        clicked-reset? (reset-to-initial world-state)
+        clicked-save?  (remember-initial-state world-state)
         :else          world-state)))
 
 
@@ -177,7 +195,6 @@
        rand-nth
        first))
 
-
 (defn move-randomly
   [world-state]
   (swap! ticker dec)
@@ -186,9 +203,8 @@
       (reset! ticker @interval)
       (if-let [m (get-random-legal-move-name world-state)]
         (flip-update-edge m world-state)
-        (merge (:initial world-state)
-               {:random? true}
-               {:initial (:initial world-state)})))
+        (reset-to-initial world-state)
+        ))
     world-state))
 
 
