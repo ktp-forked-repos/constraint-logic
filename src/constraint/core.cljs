@@ -219,6 +219,19 @@
    vals
    (some true?)))
 
+(defn successful-run
+  [world-state]
+  (let [inc-stats (partial merge-with + {:runs 1, :success 1})]
+    (-> world-state
+        reset-to-initial
+        (update-in [:stats] inc-stats))))
+
+
+(defn unsuccessful-run
+  [world-state]
+  (-> world-state
+      reset-to-initial
+      (update-in [:stats :runs] inc)))
 
 (defn move-randomly
   [world-state]
@@ -227,13 +240,10 @@
     (do 
       (reset! ticker @interval)
       (if (any-target-flipped? world-state)
-        (update-in (reset-to-initial world-state)
-                   [:stats] (partial  merge-with + {:runs 1, :success 1}))
+        (successful-run world-state)
         (if-let [m (get-random-legal-move-name world-state)]
           (flip-update-edge m world-state)
-          (update-in (reset-to-initial world-state)
-                     [:stats :runs] inc)
-          )))
+          (unsuccessful-run world-state))))
     world-state))
 
 
