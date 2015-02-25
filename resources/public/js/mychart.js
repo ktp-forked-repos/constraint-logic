@@ -1,0 +1,42 @@
+function myData() {
+	var series1 = [];
+	for(var i =1; i < 100; i ++) {
+		series1.push({
+			x: i, y: 100 / i
+		});
+	}
+
+	return [
+	{
+		key: "Series #1",
+		values: series1,
+		color: "#0000ff"
+	}
+	];
+}
+function z(xlabel, arg) {
+nv.addGraph(function() {
+	var chart = nv.models.discreteBarChart();
+
+	chart.xAxis
+		.axisLabel(xlabel);
+
+	chart.yAxis
+		.axisLabel("moves")
+		.tickFormat(d3.format("d"))
+		;
+
+	d3.select("svg#wololo")
+		.datum(arg)
+		.transition().duration(1).call(chart);
+
+	nv.utils.windowResize(
+			function() {
+				chart.update();
+			}
+			);
+
+	return chart;
+});
+
+}
