@@ -10,7 +10,7 @@ function js_graph(xlabel, arg) {
 		        .tickFormat(d3.format("d"))
 		    ;
 
-	      d3.select("svg#wololo")
+	      d3.select("svg#thegraph")
 		        .datum(arg)
 		        .transition().duration(1).call(chart);
 
