@@ -1,12 +1,25 @@
 <html>
-<head>
+  <head>
     <title>Constraint logic</title>
     <link href="css/style.css" rel="stylesheet" type="text/css" />
-</head>
-<body>
+
+    <link href="css/nv.d3.css" rel="stylesheet" type="text/css">
+		<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="js/nv.d3.js"></script>
+    <script src="js/mychart.js"></script>
+  </head>
+  <body>
+    <svg id="thegraph"/>
+    <div id="visibility">
+      <button id="edit">go edit</button>
+      <button id="save">save</button>
+      <button id="auto">go auto</button>
+      <button id="flips">make number of flips not matter</button>
+      <button id="manualreset">manual reset</button>
+      <input id="randomrange" type="range" max="60" min="1">
+    </div>
     <div id="forsvg"></div>
     <textarea id="data" rows="8" cols="40"></textarea>
-    <script src="constraint_prod.js" type="text/javascript"></script>
-</body>
+    <script src="constraint.js" type="text/javascript"></script>
+  </body>
 </html>
-
