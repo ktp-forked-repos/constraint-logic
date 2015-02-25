@@ -15,6 +15,8 @@
     [big-bang.core :refer [big-bang!]]
     [cljs.reader :as reader]
     [goog.net.XhrIo :as xhr]
+    [goog.string :as gstring]
+    [goog.string.format]
     [cljs.core.async :as async :refer [<! chan close!]]))
 
 
@@ -145,7 +147,7 @@
   [{:keys [initial length lengths stats random?]}]
   (merge initial
          {:lengths lengths,
-          :length length
+          :length 0
           :stats stats,
           :random? random?,
           :initial initial}))
@@ -233,18 +235,55 @@
    (some true?)))
 
 
+(defn make-coords-map-for-js
+  [x y]
+  {"color" (if (pos? y) "blue" "red")
+   "x"     x
+   "y"     (Math/abs y)})
+
 (defn make-a-map-for-graph
   [s]
-  (mapv #(let [c (if (pos? %1) "blue" "red")]
-           {"color" c "x" %2 "y" %1 }) (take-last 100 s) (range)))
+  (mapv make-coords-map-for-js (range) (take-last 100 s)))
+
+(defn avg
+  [coll]
+  (if (= 0 (count coll))
+    0.0
+    (/ (apply + coll) (count coll))))
+
+(defn zero-if-empty-apply
+  [f coll]
+  (if (empty? coll)
+    0
+    (apply f coll)))
+
+(defn make-stats-for-js
+  [{:keys [lengths]}]
+  (let [groupped  (merge {true [], false []} (group-by pos? lengths))
+        successes (groupped true)
+        failures  (map #(Math/abs %) (groupped false))]
+    (gstring/format
+     "Runs: %d, win: %d, win max/min: %d/%d, win avg: %.2f\n 
+fail: %d, fail max/min: %d/%d, fail avg: %.2f"
+    (count lengths)
+    (count successes)
+    (zero-if-empty-apply max successes)
+    (zero-if-empty-apply min successes)
+    (avg successes)
+    (count failures)
+    (zero-if-empty-apply max failures)
+    (zero-if-empty-apply min failures)
+    (avg failures)
+    )
+  ))
 
 (defn graph
   [world-state]
   (js/js_graph
-   (clj->js (str (:stats world-state)))
+   (clj->js (str (make-stats-for-js world-state)))
    (clj->js [{"key"    "Series #1",
-                   "values" (make-a-map-for-graph (:lengths world-state))
-                   "color"  "#0000ff"}]))
+              "values" (make-a-map-for-graph (:lengths world-state))
+              "color"  "#0000ff"}]))
   world-state)
 
 
