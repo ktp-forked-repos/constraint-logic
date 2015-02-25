@@ -240,7 +240,8 @@
 
 (defn graph
   [world-state]
-  (js/z (clj->js (str (:stats world-state)))
+  (js/js_graph
+   (clj->js (str (:stats world-state)))
    (clj->js [{"key"    "Series #1",
                    "values" (make-a-map-for-graph (:lengths world-state))
                    "color"  "#0000ff"}]))
@@ -288,15 +289,6 @@
     (move-randomly world-state)
     world-state))
 
-;; (defn random-nonsense
-;;   [size]
-;;   (mapv #(let [y (- 50 (rand-int 100))
-;;                 c (if (pos? y) "blue" "red")]
-;;             {"color" c "x" %1 "y" y }) (range size) ))
-
-;;   (js/z  (clj->js [{"key" "Series #1",
-;;                     "values" (random-nonsense (rand-int 20))
-;;                     "color" "#0000ff"}]))
 
 (defn change-interval
   []
